@@ -49,14 +49,11 @@ sub _match_level ($self, $locations, @args)
 	my @result = $self->SUPER::_match_level($locations, @args);
 	return @result unless @result > 1;
 
-	my $bridge = shift @result;
-	@result =
+	return
 		map { $_->[0] }
 		sort { $a->[1] <=> $b->[1] }
 		map { [$_, ref eq 'ARRAY' ? $_->[0]->order : $_->order] }
 		@result;
-
-	return ($bridge, @result);
 }
 
 sub match ($self, $path, $method //= '')
