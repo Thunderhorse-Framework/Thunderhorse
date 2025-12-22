@@ -11,16 +11,13 @@ sub build ($self)
 
 	$r->add(
 		'/hello/?msg' => {
-			to => 'print_message',
+			to => sub ($self, $context, $msg) {
+				return "Hello, $msg";
+			},
 			defaults => {
 				msg => 'world',
 			},
 		}
 	);
-}
-
-sub print_message ($self, $context, $msg)
-{
-	return "Hello, $msg!";
 }
 

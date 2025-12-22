@@ -57,7 +57,8 @@ sub _build_name ($self)
 
 sub get_destination ($self)
 {
-	return $self->to if $self->pagi;
+	my $to = $self->to;
+	return $to if ref $to eq 'CODE';
 	return $self->controller->can($self->to);
 }
 
@@ -65,14 +66,14 @@ sub get_destination ($self)
 # TODO: move this somewhere else (but not to match)
 sub pagify ($self, $matched)
 {
+	my $dest = $self->get_destination;
 	if ($self->pagi) {
 		# TODO: this should always mark as rendered
 		# TODO: adjust PAGI (like Kelp did to PSGI)
-		return $self->to;
+		return $dest;
 	}
 	else {
 		weaken $self;
-		my $dest = $self->get_destination;
 
 		return async sub ($scope, $receive, $send) {
 			Gears::X->raise('bad PAGI execution chain, not a thunderhorse app')
