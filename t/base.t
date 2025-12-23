@@ -1,6 +1,5 @@
 use Test2::V1 -ipP;
-use Thunderhorse;
-use PAGI::Test;
+use Thunderhorse::Test;
 
 ################################################################################
 # This tests whether Thunderhorse basic app works
@@ -27,38 +26,22 @@ package BasicApp {
 	}
 };
 
-my $app = BasicApp->new->run;
+my $t = Thunderhorse::Test->new(app => BasicApp->new);
 
 subtest 'should route to a valid location' => sub {
-	my $test = PAGI::Test->new(app => $app);
-	my $res = $test->get('/basic/placeholder')->get;
-
-	my @events = $res->events;
-	ok @events > 0, 'Events captured';
-
-	my ($start) = grep { $_->{type} eq 'http.response.start' } @events;
-	ok $start, 'Start event captured';
-	is $start->{status}, 200, 'Status in start event';
-
-	my ($body) = grep { $_->{type} eq 'http.response.body' } @events;
-	ok $body, 'Body event captured';
-	is $body->{body}, 'BasicApp;Thunderhorse::Context;placeholder', 'Body in event';
+	$t->request('/basic/placeholder')
+		->status_is(200)
+		->header_is('Content-Type', 'text/html')
+		->body_is('BasicApp;Thunderhorse::Context;placeholder')
+		;
 };
 
 subtest 'should route to 404' => sub {
-	my $test = PAGI::Test->new(app => $app);
-	my $res = $test->get('/basic')->get;
-
-	my @events = $res->events;
-	ok @events > 0, 'Events captured';
-
-	my ($start) = grep { $_->{type} eq 'http.response.start' } @events;
-	ok $start, 'Start event captured';
-	is $start->{status}, 404, 'Status in start event';
-
-	my ($body) = grep { $_->{type} eq 'http.response.body' } @events;
-	ok $body, 'Body event captured';
-	is $body->{body}, 'Not Found', 'Body ok';
+	$t->request('/basic/')
+		->status_is(404)
+		->header_is('Content-Type', 'text/plain')
+		->body_is('Not Found')
+		;
 };
 
 done_testing;
