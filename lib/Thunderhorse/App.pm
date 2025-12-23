@@ -60,7 +60,7 @@ async sub pagi ($self, $scope, $receive, $send)
 	}
 
 	if (!$res->rendered) {
-		await $res->code(404)->render(text => 'Not found');
+		await $res->code(404)->render(text => 'Not Found');
 	}
 }
 

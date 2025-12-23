@@ -84,7 +84,7 @@ sub pagify ($self, $matched)
 
 			my $res = $context->res;
 			try {
-				my $result = $dest->($self, $context, $matched->@*);
+				my $result = $dest->($self->controller, $context, $matched->@*);
 				$result = await $result
 					if $result isa 'Future';
 
