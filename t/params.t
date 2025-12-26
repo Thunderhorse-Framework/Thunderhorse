@@ -134,5 +134,17 @@ subtest 'should handle multiple header values' => sub {
 		;
 };
 
+subtest 'should handle headers together with form' => sub {
+	$t->request('/headers', method => 'POST', headers => {'x-multi' => 'value'}, form => {foo => 'bar'})
+		->status_is(200)
+		->body_like(qr/^x-multi: value$/m)
+		;
+
+	$t->request('/post', method => 'POST', headers => {'x-multi' => 'value'}, form => {foo => 'bar'})
+		->status_is(200)
+		->body_like(qr/^foo: bar$/m)
+		;
+};
+
 done_testing;
 
