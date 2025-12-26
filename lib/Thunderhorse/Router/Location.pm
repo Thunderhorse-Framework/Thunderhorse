@@ -70,7 +70,7 @@ sub _build_pagi_app ($self)
 		# TODO: adjust PAGI (like Kelp did to PSGI)
 		return async sub ($scope, @args) {
 			my $result = await $dest->($scope, @args);
-			$scope->{thunderhorse}->consume(true);
+			$scope->{thunderhorse}->consume;
 
 			return $result;
 		}
