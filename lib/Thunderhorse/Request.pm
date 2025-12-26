@@ -4,7 +4,6 @@ use v5.40;
 use Mooish::Base -standard;
 
 use Future::AsyncAwait;
-use JSON::MaybeXS qw(decode_json);
 use Gears::X::Thunderhorse;
 
 extends 'PAGI::Request';
@@ -23,11 +22,5 @@ sub update ($self)
 	my $pagi = $self->context->pagi;
 	$self->{scope} = $pagi->[0];
 	$self->{receive} = $pagi->[1];
-}
-
-async sub json ($self)
-{
-	my $body = await $self->body;
-	return decode_json($body);
 }
 
