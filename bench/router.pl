@@ -75,7 +75,7 @@ my $m_c = Mojolicious::Controller->new;
 cmpthese 200.01, {
 	mojo =>
 		sub { Mojolicious::Routes::Match->new(root => $m_r)->find($m_c, {method => 'GET', path => '/test/test2'}) },
-	thunderhorse => sub { $th_r->flat_match('/test/test2') },
+	thunderhorse => sub { $th_r->match('/test/test2') },
 	kelp => sub { $k_r->match('/test/test2') },
 };
 

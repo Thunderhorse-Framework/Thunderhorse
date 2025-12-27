@@ -15,8 +15,9 @@ has param 'pagi' => (
 	writer => -hidden,
 );
 
+# match structure is recursive
 has field 'match' => (
-	(STRICT ? (isa => InstanceOf ['Gears::Router::Match']) : ()),
+	(STRICT ? (isa => (InstanceOf ['Gears::Router::Match']) | ArrayRef) : ()),
 	writer => 1,
 );
 

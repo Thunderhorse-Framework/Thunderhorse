@@ -86,29 +86,41 @@ sub _build_pagi_app ($self)
 			my $ctx = $scope->{thunderhorse};
 			$ctx->set_pagi([$scope, $receive, $send]);
 
-			try {
-				my $facade = $controller->make_facade($ctx);
-				my $result = $dest->($controller, $facade, $ctx->match->matched->@*);
-				$result = await $result
-					if $result isa 'Future';
+			my $match = $ctx->match;
+			my $bridge = ref $match eq 'ARRAY';
 
-				if (!$ctx->is_consumed) {
-					if (defined $result) {
-						# TODO: result should be an array? (status, content_type, content)
-						await $ctx->res->status(200)->html($result);
-					}
-					else {
-						weaken $facade;
-						Gears::X::Thunderhorse->raise("context hasn't been given up - forgot to await?")
-							if defined $facade;
+			if (defined $dest) {
+				try {
+					my $facade = $controller->make_facade($ctx);
+					my $result = $dest->($controller, $facade, ($bridge ? $match->[0] : $match)->matched->@*);
+					$result = await $result
+						if $result isa 'Future';
+
+					if (!$ctx->is_consumed) {
+						if (defined $result) {
+							# TODO: result should be an array? (status, content_type, content)
+							await $ctx->res->status(200)->html($result);
+						}
+						else {
+							weaken $facade;
+							Gears::X::Thunderhorse->raise("context hasn't been given up - forgot to await?")
+								if defined $facade;
+						}
 					}
 				}
+				catch ($ex) {
+					die $ex unless $ex isa 'Gears::X::HTTP';
+					# TODO: proper message
+					await $ctx->res->status($ex->code)->text('Error')
+					# TODO: log $ex->message
+				}
 			}
-			catch ($ex) {
-				die $ex unless $ex isa 'Gears::X::HTTP';
-				# TODO: proper message
-				await $ctx->res->status($ex->code)->text('Error')
-				# TODO: log $ex->message
+
+			# if this is a bridge and bridge did not render, it means we are
+			# free to go deeper. Avoid first match, as it was handled already
+			# above
+			if ($bridge && !$ctx->is_consumed) {
+				await $controller->pagi_loop($ctx, $match->@[1 .. $match->$#*]);
 			}
 		};
 	}
@@ -116,6 +128,8 @@ sub _build_pagi_app ($self)
 
 sub get_destination ($self)
 {
+	return undef unless $self->implemented;
+
 	my $to = $self->to;
 	return $to if ref $to eq 'CODE';
 	return $self->controller->can($self->to);

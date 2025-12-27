@@ -57,7 +57,7 @@ my sub retrieve ($router, $matches)
 			$match = bless \%args, $class;
 		}
 		elsif (ref $match eq 'ARRAY') {
-			$match = __SUB__->($match);
+			$match = __SUB__->($router, $match);
 		}
 	}
 
