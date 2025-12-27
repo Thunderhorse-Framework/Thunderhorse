@@ -23,16 +23,6 @@ has extended 'router' => (
 
 with 'Thunderhorse::Routable';
 
-# async sub drain_request ($self, $receive) {
-#     while (1) {
-#         my $event = await $receive->();
-#         # Exit if not a request event (e.g., http.disconnect)
-#         last if $event->{type} ne 'http.request';
-#         # Exit if this is the final body chunk
-#         last unless $event->{more};
-#     }
-# }
-
 sub app ($self)
 {
 	return $self;
