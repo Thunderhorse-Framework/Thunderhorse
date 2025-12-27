@@ -3,7 +3,7 @@ on 'test' => sub {
 };
 
 requires 'perl' => '5.040';
-requires 'PAGI' => '0.001009';
+requires 'PAGI' => '0.001011';
 requires 'Gears' => '0';
 requires 'Mooish::Base' => '1.001';
 requires 'Future::AsyncAwait' => 0;

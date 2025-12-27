@@ -45,18 +45,17 @@ package FacadeApp::Controller::Test {
 			}
 		);
 
-		# TODO: this does not work yet
-		# this is good, because it consumes the context explicitly - no need to
-		# await because Thunderhorse knows the response will be rendered
-		# eventually
-		# $router->add(
-		# 	'/consumed' => {
-		# 		to => async sub ($self, $ctx) {
-		# 			$ctx->consume;
-		# 			$ctx->send_something_later;
-		# 		}
-		# 	}
-		# );
+		# this is bad, because it consumes the context explicitly but does not
+		# await. This behavior is wrong on PAGI level, which forces fully
+		# rendered response before server finishes handling the app
+		$router->add(
+			'/consumed' => {
+				to => async sub ($self, $ctx) {
+					$ctx->consume;
+					$ctx->send_something_later;
+				}
+			}
+		);
 
 		# this is bad, because it does not await - $ctx will have references
 		# and Thunderhorse will raise an exception
@@ -92,23 +91,17 @@ subtest 'should render /good' => sub {
 		;
 };
 
-# TODO: this does not work yet
-# subtest 'should render /consumed' => sub {
-# 	$t->request('/consumed')
-# 		->status_is(200)
-# 		->header_is('Content-Type', 'text/plain; charset=utf-8')
-# 		->body_is('Something')
-# 		;
-# };
+subtest 'should render /consumed' => sub {
+	like dies {
+		$t->request('/consumed');
+	}, qr/\QDid you forget to 'await'\E/, 'exception ok';
+};
 
 subtest 'should not render /bad' => sub {
-	# TODO: error now propagates outside of test client
-	# $t->request('/bad')
-	# 	->status_is(500)
-	# 	;
-	like dies {
-		$t->request('/bad')
-	}, qr/\Qforgot to await?\E/, 'exception ok';
+	$t->request('/bad')
+		->status_is(500)
+		->exception_like(qr/\Qforgot await?\E/)
+		;
 };
 
 done_testing;

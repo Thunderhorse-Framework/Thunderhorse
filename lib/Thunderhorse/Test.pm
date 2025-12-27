@@ -61,3 +61,10 @@ sub body_like ($self, $wanted, $name = 'body ok')
 	return $self;
 }
 
+sub exception_like ($self, $wanted, $name = 'exception ok')
+{
+	T2->like($self->response->exception, $wanted, $name);
+
+	return $self;
+}
+

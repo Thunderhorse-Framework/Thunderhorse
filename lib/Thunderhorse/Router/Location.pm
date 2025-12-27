@@ -109,7 +109,7 @@ sub _build_pagi_app ($self)
 						}
 						else {
 							weaken $facade;
-							Gears::X::Thunderhorse->raise("context hasn't been given up - forgot to await?")
+							Gears::X::Thunderhorse->raise("context hasn't been given up - forgot await?")
 								if defined $facade;
 						}
 					}
