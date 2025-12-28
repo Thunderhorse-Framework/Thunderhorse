@@ -75,7 +75,7 @@ my $t = Thunderhorse::Test->new(app => ControllersApp->new);
 subtest 'should route to a valid location' => sub {
 	$t->request('/base')
 		->status_is(200)
-		->body_is('base: ControllersApp')
+		->body_is('base: Thunderhorse::AppController')
 		;
 
 	$t->request('/internal')

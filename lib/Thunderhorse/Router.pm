@@ -9,7 +9,7 @@ use Gears::X::Thunderhorse;
 extends 'Gears::Router';
 
 has field 'controller' => (
-	isa => ConsumerOf ['Thunderhorse::Routable'],
+	isa => InstanceOf ['Thunderhorse::Controller'],
 	writer => 1,
 );
 

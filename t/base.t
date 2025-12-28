@@ -74,7 +74,7 @@ subtest 'should route to a valid location' => sub {
 	$t->request('/foundation/placeholder')
 		->status_is(200)
 		->header_is('Content-Type', 'text/html; charset=utf-8')
-		->body_is('BasicApp;Thunderhorse::Context::Facade;placeholder')
+		->body_is('Thunderhorse::AppController;Thunderhorse::Context::Facade;placeholder')
 		;
 };
 

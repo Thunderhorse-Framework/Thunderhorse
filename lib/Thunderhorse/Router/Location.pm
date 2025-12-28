@@ -38,7 +38,7 @@ has param 'pagi_middleware' => (
 );
 
 has param 'controller' => (
-	isa => ConsumerOf ['Thunderhorse::Routable'],
+	isa => InstanceOf ['Thunderhorse::Controller'],
 );
 
 has param 'pagi_app' => (
@@ -126,7 +126,7 @@ sub _build_pagi_app ($self)
 			# free to go deeper. Avoid first match, as it was handled already
 			# above
 			if ($bridge && !$ctx->is_consumed) {
-				await $controller->pagi_loop($ctx, $match->@[1 .. $match->$#*]);
+				await $controller->app->pagi_loop($ctx, $match->@[1 .. $match->$#*]);
 			}
 		};
 	}
