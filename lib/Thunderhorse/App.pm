@@ -3,6 +3,7 @@ package Thunderhorse::App;
 use v5.40;
 use Mooish::Base -standard;
 
+use Gears qw(load_component get_component_name);
 use Thunderhorse::Context;
 use Thunderhorse::Router;
 use Thunderhorse::Controller;
@@ -18,9 +19,10 @@ has field 'loop' => (
 	default => sub { IO::Async::Loop->new },
 );
 
-has field 'app_controller' => (
+# the base app controller
+has field 'controller' => (
 	isa => InstanceOf ['Thunderhorse::Controller'],
-	lazy => 1,
+	lazy => '_build_app_controller',
 );
 
 has extended 'router' => (
@@ -29,16 +31,47 @@ has extended 'router' => (
 	default => sub { Thunderhorse::Router->new },
 );
 
+has field 'modules' => (
+	isa => ArrayRef,
+	default => sub { [] },
+);
+
+has field 'extra_methods' => (
+	isa => HashRef,
+	default => sub {
+		{
+			controller => {},
+		}
+	},
+);
+
 sub _build_app_controller ($self)
 {
-	return Thunderhorse::AppController->new(app => $self);
+	return $self->_build_controller('Thunderhorse::AppController');
 }
 
 sub router ($self)
 {
 	my $router = $self->_router;
-	$router->set_controller($self->app_controller);
+	$router->set_controller($self->controller);
 	return $router;
+}
+
+sub load_module ($self, $module_class, %args)
+{
+	my $module = load_component(get_component_name($module_class, 'Thunderhorse::Module'))
+		->new(app => $self, config => \%args);
+
+	# Merge module's registered methods into app's collection
+	foreach my $area (keys $module->registered->%*) {
+		$self->extra_methods->{$area}->%* = (
+			$self->extra_methods->{$area}->%*,
+			$module->registered->{$area}->%*
+		);
+	}
+
+	push $self->modules->@*, $module;
+	return $self;
 }
 
 async sub pagi ($self, $scope, $receive, $send)

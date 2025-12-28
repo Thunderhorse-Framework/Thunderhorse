@@ -47,9 +47,9 @@ subtest 'autoloading from app controller should work' => sub {
 
 subtest 'autoloading bad symbols should not work' => sub {
 	ok !$c->can('testthree'), 'can on bad methods ok';
-	like dies { $c->testtwo }, qr{Can't locate object method "testtwo" via package "TestApp"},
+	like dies { $c->testtwo }, qr{no such method testtwo},
 		'method with bad SUPER ok';
-	like dies { $c->testthree }, qr{Can't locate object method "testthree" via package "TestApp"}, 'bad method ok';
+	like dies { $c->testthree }, qr{no such method testthree}, 'bad method ok';
 };
 
 done_testing;
