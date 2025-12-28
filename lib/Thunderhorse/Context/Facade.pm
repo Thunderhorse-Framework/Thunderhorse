@@ -20,5 +20,15 @@ has param 'context' => (
 
 with qw(Thunderhorse::Autoloadable);
 
-sub _autoload_from { 'context' }
+sub _run_method ($self, $method, @args)
+{
+	die "no such method $method"
+		unless ref $self;
+	return $self->context->$method(@args);
+}
+
+sub _can_method ($self, $method)
+{
+	return $self->context->can($method);
+}
 

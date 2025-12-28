@@ -19,6 +19,11 @@ package TestAutoloader {
 	use Mooish::Base -standard;
 	extends 'Thunderhorse::AppController';
 
+	sub testone ($self, @args)
+	{
+		return 'altered ' . $self->SUPER::testone(@args);
+	}
+
 	sub testtwo ($self, @args)
 	{
 		return $self->SUPER::testtwo(@args);
@@ -35,14 +40,15 @@ subtest '"can" from app controller should work' => sub {
 };
 
 subtest 'autoloading from app controller should work' => sub {
-	is $c->testone('two'), 'one two TestApp', 'running app methods ok';
+	is $c->testone('two'), 'altered one two TestApp', 'running app methods ok';
 	ok $c->does('Thunderhorse::Autoloadable'), 'running Moo methods ok';
 	ok $c->isa('Thunderhorse::Controller'), 'running universal methods ok';
 };
 
 subtest 'autoloading bad symbols should not work' => sub {
 	ok !$c->can('testthree'), 'can on bad methods ok';
-	like dies { $c->testtwo }, qr{no such method TestAutoloader::SUPER::testtwo}, 'method with bad SUPER ok';
+	like dies { $c->testtwo }, qr{Can't locate object method "testtwo" via package "TestApp"},
+		'method with bad SUPER ok';
 	like dies { $c->testthree }, qr{Can't locate object method "testthree" via package "TestApp"}, 'bad method ok';
 };
 
