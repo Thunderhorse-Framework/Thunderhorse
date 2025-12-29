@@ -15,6 +15,7 @@ has field 'template' => (
 
 sub build ($self)
 {
+	weaken $self;
 	my $config = $self->config;
 
 	my $tpl = Gears::Template::TT->new($config->%*);

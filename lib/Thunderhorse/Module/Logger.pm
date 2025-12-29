@@ -17,6 +17,7 @@ has field 'logger' => (
 
 sub build ($self)
 {
+	weaken $self;
 	my $config = $self->config;
 
 	my $logger = Gears::Logger::Log4perl->new($config->%*);
