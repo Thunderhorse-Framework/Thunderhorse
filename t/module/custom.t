@@ -19,7 +19,7 @@ package TestModule {
 			}
 		);
 	}
-};
+}
 
 package ModuleApp {
 	use Mooish::Base -standard;
@@ -41,7 +41,7 @@ package ModuleApp {
 	{
 		return $self->custom_method('works');
 	}
-};
+}
 
 my $t = Thunderhorse::Test->new(app => ModuleApp->new);
 

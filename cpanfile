@@ -10,4 +10,5 @@ requires 'Future::AsyncAwait' => 0;
 requires 'IO::Async' => 0;
 requires 'JSON::MaybeXS' => 0;
 requires 'Log::Log4perl' => 0;
+requires 'Template::Toolkit' => 0;
 
