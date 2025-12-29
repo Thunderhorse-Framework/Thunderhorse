@@ -18,10 +18,7 @@ sub build ($self)
 
 sub show_clock ($self, $ctx)
 {
-	my $pos = tell DATA;
-	my $html = do { local $/; <DATA> };
-	seek DATA, $pos, 0;
-	return $html;
+	return $self->render(\*DATA);
 }
 
 __DATA__
