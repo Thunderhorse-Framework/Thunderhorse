@@ -9,7 +9,7 @@ has param 'config' => (
 	isa => HashRef,
 );
 
-has field 'registered' => (
+has field 'methods' => (
 	isa => HashRef,
 	default => sub {
 		{
@@ -18,10 +18,15 @@ has field 'registered' => (
 	},
 );
 
+has field 'wrappers' => (
+	isa => ArrayRef,
+	default => sub { [] },
+);
+
 # register new methods for various areas
 sub register ($self, $for, $name, $code)
 {
-	my $area = $self->registered->{$for};
+	my $area = $self->methods->{$for};
 	Gears::X::Thunderhorse->raise("bad area '$for'")
 		unless defined $area;
 
@@ -29,5 +34,10 @@ sub register ($self, $for, $name, $code)
 		if exists $area->{$name};
 
 	$area->{$name} = $code;
+}
+
+sub wrap ($self, $mw)
+{
+	push $self->wrappers->@*, $mw;
 }
 

@@ -45,6 +45,11 @@ has field 'extra_methods' => (
 	},
 );
 
+has field 'extra_wrappers' => (
+	isa => ArrayRef,
+	default => sub { [] },
+);
+
 sub _build_app_controller ($self)
 {
 	return $self->_build_controller('Thunderhorse::AppController');
@@ -63,12 +68,17 @@ sub load_module ($self, $module_class, %args)
 		->new(app => $self, config => \%args);
 
 	# Merge module's registered methods into app's collection
-	foreach my $area (keys $module->registered->%*) {
+	foreach my $area (keys $module->methods->%*) {
 		$self->extra_methods->{$area}->%* = (
 			$self->extra_methods->{$area}->%*,
-			$module->registered->{$area}->%*
+			$module->methods->{$area}->%*,
 		);
 	}
+
+	$self->extra_wrappers->@* = (
+		$self->extra_wrappers->@*,
+		$module->wrappers->@*,
+	);
 
 	push $self->modules->@*, $module;
 	return $self;
@@ -122,8 +132,22 @@ async sub pagi_loop ($self, $ctx, @matches)
 
 sub run ($self)
 {
-	return sub (@args) {
+	my $pagi = sub (@args) {
 		return $self->pagi(@args);
+	};
+
+	foreach my $mw ($self->extra_wrappers->@*) {
+		if (ref $mw eq 'CODE') {
+			$pagi = $mw->($pagi);
+		}
+		elsif ($mw isa 'PAGI::Middleware') {
+			$pagi = $mw->wrap($pagi);
+		}
+		else {
+			Gears::X::Thunderhorse->raise('bad middleware, not CODE or PAGI::Middleware');
+		}
 	}
+
+	return $pagi;
 }
 
