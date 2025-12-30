@@ -14,15 +14,15 @@ has param 'app' => (
 	isa => InstanceOf ['Thunderhorse::App'],
 );
 
-has field 'test' => (
-	isa => InstanceOf ['PAGI::Test::Client'],
-	lazy => 1,
-);
-
 has param 'raise_exceptions' => (
 	isa => Bool,
 	writer => 1,
 	default => true,
+);
+
+has field 'test' => (
+	isa => InstanceOf ['PAGI::Test::Client'],
+	lazy => 1,
 );
 
 has field 'response' => (

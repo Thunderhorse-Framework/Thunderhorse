@@ -14,11 +14,12 @@ package TemplateApp {
 	sub build ($self)
 	{
 		$self->load_module(
-			'Template',
-			paths => ['t/templates'],
-			conf => {
-				OUTLINE_TAG => qr{\V*%%},
-			},
+			'Template' => {
+				paths => ['t/templates'],
+				conf => {
+					OUTLINE_TAG => qr{\V*%%},
+				},
+			}
 		);
 
 		$self->router->add(

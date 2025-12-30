@@ -16,13 +16,14 @@ package LoggerApp {
 	{
 		# Configure Log4perl with TestBuffer appender to capture output
 		$self->load_module(
-			'Logger',
-			conf => \<<~CONF
-			log4perl.rootLogger=DEBUG, test
-			log4perl.appender.test=Log::Log4perl::Appender::TestBuffer
-			log4perl.appender.test.layout=PatternLayout
-			log4perl.appender.test.layout.ConversionPattern=%m%n
-			CONF
+			'Logger' => {
+				conf => \<<~CONF,
+				log4perl.rootLogger=DEBUG, test
+				log4perl.appender.test=Log::Log4perl::Appender::TestBuffer
+				log4perl.appender.test.layout=PatternLayout
+				log4perl.appender.test.layout.ConversionPattern=%m%n
+				CONF
+			}
 		);
 
 		$self->router->add(

@@ -96,14 +96,14 @@ sub configure ($self)
 	# TODO: module dependencies and ordering
 	my %modules = $config->get('modules', {})->%*;
 	foreach my $module_name (sort keys %modules) {
-		$self->load_module($module_name, $modules{module_name}->%*);
+		$self->load_module($module_name, $modules{$module_name});
 	}
 }
 
-sub load_module ($self, $module_class, %args)
+sub load_module ($self, $module_class, $args = {})
 {
 	my $module = load_component(get_component_name($module_class, 'Thunderhorse::Module'))
-		->new(app => $self, config => \%args);
+		->new(app => $self, config => $args);
 
 	# Merge module's registered methods into app's collection
 	foreach my $area (keys $module->methods->%*) {
