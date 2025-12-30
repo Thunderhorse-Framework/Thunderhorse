@@ -77,7 +77,7 @@ package FacadeApp {
 
 	sub build ($self)
 	{
-		$self->set_controllers('Test');
+		$self->load_controller('Test');
 	}
 }
 

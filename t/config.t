@@ -39,26 +39,17 @@ package TestReader {
 package TestApp {
 	use Mooish::Base -standard;
 	extends 'Thunderhorse::App';
-
-	has extended 'config' => (
-		default => sub {
-			Thunderhorse::Config->new(
-				config_dir => 't/config/merge/conf',
-			);
-		},
-	);
 };
 
 subtest 'should load config files without PAGI_ENV' => sub {
 	my $config = Thunderhorse::Config->new(
-		config_dir => 't/config/base/conf',
 		readers => [
 			Gears::Config::Reader::PerlScript->new,
 			TestReader->new,
 		],
 	);
 
-	$config->load_from_files(undef);
+	$config->load_from_files('t/config/base', undef);
 
 	is $config->config, {
 		base => 'value',
@@ -74,13 +65,12 @@ subtest 'should load config files without PAGI_ENV' => sub {
 
 subtest 'should load production environment config with deep merge' => sub {
 	my $config = Thunderhorse::Config->new(
-		config_dir => 't/config/merge/conf',
 		readers => [
 			Gears::Config::Reader::PerlScript->new,
 		],
 	);
 
-	$config->load_from_files('production');
+	$config->load_from_files('t/config/merge', 'production');
 
 	is $config->config, {
 		base => 'production_override',
@@ -102,14 +92,13 @@ subtest 'should load production environment config with deep merge' => sub {
 
 subtest 'should load development environment config' => sub {
 	my $config = Thunderhorse::Config->new(
-		config_dir => 't/config/development/conf',
 		readers => [
 			Gears::Config::Reader::PerlScript->new,
 			TestReader->new,
 		],
 	);
 
-	$config->load_from_files('development');
+	$config->load_from_files('t/config/development', 'development');
 
 	is $config->config, {
 		base => 'value',
@@ -125,18 +114,17 @@ subtest 'should load development environment config' => sub {
 };
 
 subtest 'should handle missing conf directory gracefully' => sub {
-	my $config = Thunderhorse::Config->new(
-		config_dir => 't/config/nonexistent',
-	);
+	my $config = Thunderhorse::Config->new;
 
-	ok lives { $config->load_from_files('production') }, 'load_from_files does not die without conf dir';
+	ok lives { $config->load_from_files('t/config/nonexistent', 'production') },
+		'load_from_files does not die without conf dir';
 	is $config->config, {}, 'config is empty';
 };
 
 subtest 'should integrate with Thunderhorse::App' => sub {
 	local $ENV{PAGI_ENV} = 'production';
 
-	my $app = TestApp->new(config_files => true);
+	my $app = TestApp->new(initial_config => 't/config/merge');
 
 	is $app->config->config, {
 		base => 'production_override',

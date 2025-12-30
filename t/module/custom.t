@@ -28,7 +28,7 @@ package ModuleApp {
 
 	sub build ($self)
 	{
-		$self->load_module('+TestModule');
+		$self->load_module('^TestModule');
 
 		$self->router->add(
 			'/test' => {

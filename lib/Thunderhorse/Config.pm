@@ -7,14 +7,9 @@ use Path::Tiny qw(path);
 
 extends 'Gears::Config';
 
-has param 'config_dir' => (
-	isa => Str,
-	default => 'conf',
-);
-
-sub load_from_files ($self, $env)
+sub load_from_files ($self, $conf_dir, $env)
 {
-	my $conf_dir = path($self->config_dir);
+	$conf_dir = path($conf_dir);
 	return unless -d $conf_dir;
 
 	my @extensions = map { $_->handled_extensions } $self->readers->@*;

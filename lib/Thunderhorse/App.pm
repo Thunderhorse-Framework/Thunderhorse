@@ -20,9 +20,9 @@ has param 'env' => (
 	default => sub { $ENV{PAGI_ENV} },
 );
 
-has param 'config_files' => (
-	isa => Bool,
-	default => false,
+has param 'initial_config' => (
+	isa => Str | HashRef,
+	default => sub { {} },
 );
 
 has field 'loop' => (
@@ -79,9 +79,25 @@ sub router ($self)
 
 sub configure ($self)
 {
-	return unless $self->config_files;
+	my $config = $self->config;
 
-	$self->config->load_from_files($self->env);
+	my $preconf = $self->initial_config;
+	if (!ref $preconf) {
+		$config->load_from_files($preconf, $self->env);
+	}
+	else {
+		$config->add(var => $preconf);
+	}
+
+	foreach my $controller ($config->get('controllers', [])->@*) {
+		$self->load_controller($controller);
+	}
+
+	# TODO: module dependencies and ordering
+	my %modules = $config->get('modules', {})->%*;
+	foreach my $module_name (sort keys %modules) {
+		$self->load_module($module_name, $modules{module_name}->%*);
+	}
 }
 
 sub load_module ($self, $module_class, %args)

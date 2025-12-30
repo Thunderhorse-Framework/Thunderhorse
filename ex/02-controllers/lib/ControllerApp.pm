@@ -7,7 +7,7 @@ extends 'Thunderhorse::App';
 
 sub build ($self)
 {
-	$self->set_controllers('Clock');
+	$self->load_controller('Clock');
 	$self->load_module('Template');
 }
 

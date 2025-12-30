@@ -13,7 +13,8 @@ package ControllersApp {
 
 	sub build ($self)
 	{
-		$self->set_controllers('Test', '+TestC2');
+		$self->load_controller('Test')
+			->load_controller('^TestC2');
 
 		$self->router->add(
 			'/base' => {
