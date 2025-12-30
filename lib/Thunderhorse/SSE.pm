@@ -1,4 +1,4 @@
-package Thunderhorse::WebSocket;
+package Thunderhorse::SSE;
 
 use v5.40;
 use Mooish::Base -standard;
@@ -6,12 +6,12 @@ use Mooish::Base -standard;
 use Future::AsyncAwait;
 use Gears::X::Thunderhorse;
 
-extends 'PAGI::WebSocket';
+extends 'PAGI::SSE';
 with 'Thunderhorse::Message';
 
 sub FOREIGNBUILDARGS ($class, %args)
 {
-	Gears::X::Thunderhorse->raise('no context for websocket')
+	Gears::X::Thunderhorse->raise('no context for sse')
 		unless $args{context};
 
 	return $args{context}->pagi->@*;

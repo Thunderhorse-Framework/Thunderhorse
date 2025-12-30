@@ -35,6 +35,11 @@ has field 'websocket' => (
 	writer => 1,
 );
 
+has field 'sse' => (
+	isa => InstanceOf ['PAGI::Test::SSE'],
+	writer => 1,
+);
+
 sub _build_test ($self)
 {
 	return PAGI::Test::Client->new(app => $self->app->run);
@@ -159,6 +164,58 @@ sub ws_closed_ok ($self, $name = 'ws closed ok')
 sub ws_connected_ok ($self, $name = 'ws connected ok')
 {
 	T2->ok(!$self->websocket->is_closed, $name);
+	return $self;
+}
+
+## SSE TESTING
+
+sub sse_connect ($self, $path, %args)
+{
+	my $sse = $self->test->sse($path, %args);
+	$self->set_sse($sse);
+	return $self;
+}
+
+sub sse_close ($self)
+{
+	$self->sse->close unless $self->sse->is_closed;
+	return $self;
+}
+
+sub sse_receive_event ($self, %args)
+{
+	return $self->sse->receive_event(%args);
+}
+
+sub sse_receive_json ($self, %args)
+{
+	return $self->sse->receive_json(%args);
+}
+
+sub sse_event_is ($self, $wanted, $name = 'sse event ok')
+{
+	my $got = $self->sse_receive_event;
+	T2->is($got, $wanted, $name);
+	return $self;
+}
+
+sub sse_data_is ($self, $wanted, $name = 'sse data ok')
+{
+	my $got = $self->sse_receive_event;
+	T2->is($got->{data}, $wanted, $name);
+	return $self;
+}
+
+sub sse_json_is ($self, $wanted, $name = 'sse json ok')
+{
+	my $got = $self->sse_receive_json;
+	T2->is($got, $wanted, $name);
+	return $self;
+}
+
+sub sse_closed_ok ($self, $name = 'sse closed ok')
+{
+	T2->ok($self->sse->is_closed, $name);
 	return $self;
 }
 

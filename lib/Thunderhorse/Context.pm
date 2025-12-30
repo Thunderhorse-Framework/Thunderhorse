@@ -8,6 +8,7 @@ use Devel::StrictMode;
 use Thunderhorse::Request;
 use Thunderhorse::Response;
 use Thunderhorse::WebSocket;
+use Thunderhorse::SSE;
 
 extends 'Gears::Context';
 
@@ -40,6 +41,13 @@ has field 'ws' => (
 	lazy => sub ($self) { Thunderhorse::WebSocket->new(context => $self) },
 );
 
+# NOTE: sse must be lazy, because it will die if scope is not sse
+has field 'sse' => (
+	(STRICT ? (isa => InstanceOf ['Thunderhorse::SSE']) : ()),
+	predicate => 1,
+	lazy => sub ($self) { Thunderhorse::SSE->new(context => $self) },
+);
+
 has field '_consumed' => (
 	(STRICT ? (isa => Bool) : ()),
 	writer => 1,
@@ -49,10 +57,15 @@ has field '_consumed' => (
 sub set_pagi ($self, $new)
 {
 	$self->_set_pagi($new);
+
 	$self->req->update;
 	$self->res->update;
+
 	$self->ws->update
 		if $self->has_ws;
+
+	$self->sse->update
+		if $self->has_sse;
 }
 
 sub scope ($self)
