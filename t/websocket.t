@@ -49,8 +49,6 @@ package WebSocketApp {
 				await $ws->send_text("echo: $text");
 			}
 		);
-
-		return;
 	}
 
 	async sub json_echo ($self, $ctx)
@@ -64,8 +62,6 @@ package WebSocketApp {
 				await $ws->send_json($data);
 			}
 		);
-
-		return;
 	}
 
 	async sub close_test ($self, $ctx)
@@ -75,8 +71,6 @@ package WebSocketApp {
 
 		my $msg = await $ws->receive_text;
 		await $ws->close(1000, 'goodbye');
-
-		return;
 	}
 };
 

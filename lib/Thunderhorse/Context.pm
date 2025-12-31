@@ -91,6 +91,9 @@ sub consume ($self)
 
 sub is_consumed ($self)
 {
-	return $self->_consumed || $self->res->is_sent;
+	return $self->_consumed
+		|| $self->res->is_sent
+		|| ($self->has_ws && $self->ws->is_closed)
+		|| ($self->has_sse && $self->sse->is_closed);
 }
 

@@ -52,8 +52,6 @@ package SSETestApp {
 
 		await $sse->send("hello");
 		await $sse->send("world");
-
-		return;
 	}
 
 	async sub json_stream ($self, $ctx)
@@ -62,8 +60,6 @@ package SSETestApp {
 
 		await $sse->send_json({message => 'first', count => 1});
 		await $sse->send_json({message => 'second', count => 2});
-
-		return;
 	}
 
 	async sub counter ($self, $ctx)
@@ -77,8 +73,6 @@ package SSETestApp {
 				id => $i,
 			);
 		}
-
-		return;
 	}
 
 	async sub close_test ($self, $ctx)
@@ -94,8 +88,6 @@ package SSETestApp {
 		while (!$closed) {
 			await $self->loop->delay_future(after => 0.1);
 		}
-
-		return;
 	}
 };
 
