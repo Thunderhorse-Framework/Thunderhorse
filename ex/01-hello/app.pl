@@ -7,9 +7,7 @@ extends 'Thunderhorse::App';
 
 sub build ($self)
 {
-	my $r = $self->router;
-
-	$r->add(
+	$self->router->add(
 		'/hello/?msg' => {
 			to => sub ($self, $ctx, $msg) {
 				return "Hello, $msg";
