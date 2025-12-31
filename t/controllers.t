@@ -1,5 +1,6 @@
 use Test2::V1 -ipP;
 use Thunderhorse::Test;
+use HTTP::Request::Common;
 
 ################################################################################
 # This tests whether Thunderhorse controllers work
@@ -74,21 +75,20 @@ package TestC2 {
 my $t = Thunderhorse::Test->new(app => ControllersApp->new);
 
 subtest 'should route to a valid location' => sub {
-	$t->request('/base')
+	$t->request(GET '/base')
 		->status_is(200)
 		->body_is('base: Thunderhorse::AppController')
 		;
 
-	$t->request('/internal')
+	$t->request(GET '/internal')
 		->status_is(200)
 		->body_is('internal: ControllersApp::Controller::Test')
 		;
 
-	$t->request('/external')
+	$t->request(GET '/external')
 		->status_is(200)
 		->body_is('external: TestC2')
 		;
 };
 
 done_testing;
-

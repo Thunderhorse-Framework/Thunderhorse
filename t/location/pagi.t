@@ -1,5 +1,6 @@
 use Test2::V1 -ipP;
 use Thunderhorse::Test;
+use HTTP::Request::Common;
 
 ################################################################################
 # This tests whether Thunderhorse can seamlessly integrate PAGI apps
@@ -54,7 +55,7 @@ package PagiApp {
 my $t = Thunderhorse::Test->new(app => PagiApp->new);
 
 subtest 'should route to a valid PAGI location' => sub {
-	$t->request('/pagi_app')
+	$t->request(GET '/pagi_app')
 		->status_is(200)
 		->header_is('Content-Type', 'text/plain')
 		->body_is('Hello from PAGI')
@@ -62,4 +63,3 @@ subtest 'should route to a valid PAGI location' => sub {
 };
 
 done_testing;
-

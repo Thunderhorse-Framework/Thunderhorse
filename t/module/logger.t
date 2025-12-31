@@ -2,6 +2,7 @@ use v5.40;
 use Test2::V1 -ipP;
 use Thunderhorse::Test;
 use Log::Log4perl;
+use HTTP::Request::Common;
 
 ################################################################################
 # This tests whether Thunderhorse Logger module works
@@ -57,7 +58,7 @@ my $appender = Log::Log4perl->appenders->{test};
 subtest 'should have access to log method' => sub {
 	$appender->buffer('');    # Clear buffer
 
-	$t->request('/test-log')
+	$t->request(GET '/test-log')
 		->status_is(200)
 		->body_is('logged')
 		;
@@ -69,7 +70,7 @@ subtest 'should have access to log method' => sub {
 subtest 'should catch and log errors' => sub {
 	$appender->buffer('');    # Clear buffer
 
-	$t->request('/test-error')
+	$t->request(GET '/test-error')
 		->status_is(500)
 		;
 

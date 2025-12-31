@@ -5,6 +5,7 @@ use Mooish::Base -standard;
 
 use Test2::V1;
 use PAGI::Test::Client;
+use HTTP::Request::Common;
 
 die 'Error: Thunderhorse::Test loaded in a PAGI environment'
 	if $ENV{PAGI_ENV};
@@ -45,9 +46,30 @@ sub _build_test ($self)
 	return PAGI::Test::Client->new(app => $self->app->run);
 }
 
-sub request ($self, $path, %args)
+sub request ($self, $http_request)
 {
-	my $method = lc(delete $args{method} // 'GET');
+	my %args;
+
+	# Extract method and path
+	my $method = lc $http_request->method;
+	my $path = $http_request->uri->path_query;
+
+	# Extract headers
+	my %headers;
+	$http_request->headers->scan(
+		sub ($key, $value) {
+			push $headers{$key}->@*, $value;
+		}
+	);
+
+	$args{headers} = \%headers
+		if %headers;
+
+	# Extract body for POST/PUT/PATCH
+	my $content = $http_request->content;
+	$args{body} = $content
+		if length $content // '';
+
 	$self->set_response($self->test->$method($path, %args));
 
 	if ($self->response->exception && $self->raise_exceptions) {

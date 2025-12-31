@@ -1,6 +1,7 @@
 use v5.40;
 use Test2::V1 -ipP;
 use Thunderhorse::Test;
+use HTTP::Request::Common;
 
 ################################################################################
 # This tests whether Thunderhorse modules work (based on a custom module)
@@ -46,7 +47,7 @@ package ModuleApp {
 my $t = Thunderhorse::Test->new(app => ModuleApp->new);
 
 subtest 'should have access to module method' => sub {
-	$t->request('/test')
+	$t->request(GET '/test')
 		->status_is(200)
 		->body_is('custom: works')
 		;

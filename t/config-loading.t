@@ -1,6 +1,7 @@
 use v5.40;
 use Test2::V1 -ipP;
 use Thunderhorse::Test;
+use HTTP::Request::Common;
 
 ################################################################################
 # This tests whether Thunderhorse::App loads controllers and modules according
@@ -75,7 +76,7 @@ subtest 'should load controllers from config' => sub {
 
 	my $t = Thunderhorse::Test->new(app => $app);
 
-	$t->request('/from-config')
+	$t->request(GET '/from-config')
 		->status_is(200)
 		->body_is('controller: loaded')
 		;
@@ -94,7 +95,7 @@ subtest 'should load modules from config' => sub {
 
 	my $t = Thunderhorse::Test->new(app => $app);
 
-	$t->request('/module-test')
+	$t->request(GET '/module-test')
 		->status_is(200)
 		->body_is('module: configured')
 		;
@@ -116,12 +117,12 @@ subtest 'should load both controllers and modules from config' => sub {
 
 	my $t = Thunderhorse::Test->new(app => $app);
 
-	$t->request('/from-config')
+	$t->request(GET '/from-config')
 		->status_is(200)
 		->body_is('controller: loaded')
 		;
 
-	$t->request('/module-test')
+	$t->request(GET '/module-test')
 		->status_is(200)
 		->body_is('module: combined')
 		;
@@ -134,12 +135,12 @@ subtest 'should load from config file' => sub {
 
 	my $t = Thunderhorse::Test->new(app => $app);
 
-	$t->request('/from-config')
+	$t->request(GET '/from-config')
 		->status_is(200)
 		->body_is('controller: loaded')
 		;
 
-	$t->request('/module-test')
+	$t->request(GET '/module-test')
 		->status_is(200)
 		->body_is('module: from_file')
 		;
@@ -150,11 +151,11 @@ subtest 'should handle empty config gracefully' => sub {
 
 	my $t = Thunderhorse::Test->new(app => $app, raise_exceptions => false);
 
-	$t->request('/from-config')
+	$t->request(GET '/from-config')
 		->status_is(404)
 		;
 
-	$t->request('/module-test')
+	$t->request(GET '/module-test')
 		->status_is(500)
 		;
 };

@@ -19,21 +19,21 @@ package WebSocketApp {
 
 		$router->add(
 			'/echo' => {
-				action => 'websocket',
+				action => 'websocket.get',
 				to => 'echo',
 			}
 		);
 
 		$router->add(
 			'/json' => {
-				action => 'websocket',
+				action => 'websocket.get',
 				to => 'json_echo',
 			}
 		);
 
 		$router->add(
 			'/close' => {
-				action => 'websocket',
+				action => 'websocket.get',
 				to => 'close_test',
 			}
 		);

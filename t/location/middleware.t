@@ -1,6 +1,7 @@
 use v5.40;
 use Test2::V1 -ipP;
 use Thunderhorse::Test;
+use HTTP::Request::Common;
 
 use Future::AsyncAwait;
 
@@ -109,7 +110,7 @@ my $t = Thunderhorse::Test->new(app => MiddlewareApp->new);
 
 subtest 'should execute bridge middleware before nested middleware and route' => sub {
 	@order = ();
-	$t->request('/with-middleware/nested')
+	$t->request(GET '/with-middleware/nested')
 		->status_is(200)
 		->body_is('nested route')
 		;
@@ -120,7 +121,7 @@ subtest 'should execute bridge middleware before nested middleware and route' =>
 
 subtest 'should execute bridge middleware before inherited route' => sub {
 	@order = ();
-	$t->request('/with-middleware/inherited')
+	$t->request(GET '/with-middleware/inherited')
 		->status_is(200)
 		->body_is('inherited route')
 		;
@@ -131,7 +132,7 @@ subtest 'should execute bridge middleware before inherited route' => sub {
 
 subtest 'should execute route with no middleware' => sub {
 	@order = ();
-	$t->request('/no-middleware')
+	$t->request(GET '/no-middleware')
 		->status_is(200)
 		->body_is('plain route')
 		;
@@ -141,7 +142,7 @@ subtest 'should execute route with no middleware' => sub {
 
 subtest 'should have ContentLength header' => sub {
 	@order = ();
-	$t->request('/content-length')
+	$t->request(GET '/content-length')
 		->status_is(200)
 		->header_is('Content-Length', 19)
 		->body_is('content length test')

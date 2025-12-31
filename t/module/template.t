@@ -1,6 +1,7 @@
 use v5.40;
 use Test2::V1 -ipP;
 use Thunderhorse::Test;
+use HTTP::Request::Common;
 
 ################################################################################
 # This tests whether Thunderhorse::Module::Template works
@@ -60,7 +61,7 @@ package TemplateApp {
 my $t = Thunderhorse::Test->new(app => TemplateApp->new);
 
 subtest 'should render template from file with wrapper' => sub {
-	$t->request('/test')
+	$t->request(GET '/test')
 		->status_is(200)
 		->header_is('Content-Type', 'text/html; charset=utf-8')
 		->body_like(qr{^zażółć gęślą jaźń Hello World!\v+$})
@@ -68,20 +69,20 @@ subtest 'should render template from file with wrapper' => sub {
 };
 
 subtest 'should render inline template' => sub {
-	$t->request('/test-inline')
+	$t->request(GET '/test-inline')
 		->status_is(200)
 		->body_is('Hello Inline!')
 		;
 };
 
 subtest 'should render DATA template' => sub {
-	$t->request('/test-data')
+	$t->request(GET '/test-data')
 		->status_is(200)
 		->body_like(qr{^Data contents\v+$})
 		;
 
 	# again - test handle rewinding
-	$t->request('/test-data')
+	$t->request(GET '/test-data')
 		->body_like(qr{^Data contents\v+$})
 		;
 };

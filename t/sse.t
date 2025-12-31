@@ -19,28 +19,28 @@ package SSETestApp {
 
 		$router->add(
 			'/simple' => {
-				# action => 'sse.get',
+				action => 'sse.get',
 				to => 'simple',
 			}
 		);
 
 		$router->add(
 			'/json' => {
-				# action => 'sse.get',
+				action => 'sse.get',
 				to => 'json_stream',
 			}
 		);
 
 		$router->add(
 			'/counter' => {
-				# action => 'sse.get',
+				action => 'sse.get',
 				to => 'counter',
 			}
 		);
 
 		$router->add(
 			'/close' => {
-				# action => 'sse.get',
+				action => 'sse.get',
 				to => 'close_test',
 			}
 		);

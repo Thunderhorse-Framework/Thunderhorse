@@ -1,6 +1,7 @@
 use v5.40;
 use Test2::V1 -ipP;
 use Thunderhorse::Test;
+use HTTP::Request::Common;
 
 ################################################################################
 # This tests whether facades work correctly
@@ -84,7 +85,7 @@ package FacadeApp {
 my $t = Thunderhorse::Test->new(app => FacadeApp->new);
 
 subtest 'should render /good' => sub {
-	$t->request('/good')
+	$t->request(GET '/good')
 		->status_is(200)
 		->header_is('Content-Type', 'text/plain; charset=utf-8')
 		->body_is('Something')
@@ -93,14 +94,14 @@ subtest 'should render /good' => sub {
 
 subtest 'should not render /consumed' => sub {
 	like dies {
-		$t->request('/consumed');
+		$t->request(GET '/consumed');
 	}, qr/\QDid you forget to 'await'\E/, 'exception ok';
 };
 
 subtest 'should not render /bad' => sub {
 	$t->set_raise_exceptions(false);
 
-	$t->request('/bad')
+	$t->request(GET '/bad')
 		->status_is(500)
 		->exception_like(qr/\Qforgot await?\E/)
 		;

@@ -1,5 +1,6 @@
 use Test2::V1 -ipP;
 use Thunderhorse::Test;
+use HTTP::Request::Common;
 
 ################################################################################
 # This tests Thunderhorse edge cases
@@ -63,7 +64,7 @@ package EdgeApp {
 my $t = Thunderhorse::Test->new(app => EdgeApp->new);
 
 subtest 'should handle multiple locations for the same route' => sub {
-	$t->request('/multi')
+	$t->request(GET '/multi')
 		->status_is(200)
 		->body_is('this gets rendered')
 		;
@@ -82,32 +83,31 @@ subtest 'should respect route ordering' => sub {
 		'after all',
 	);
 
-	$t->request('/order')
+	$t->request(GET '/order')
 		->status_is(200)
 		->body_is(join ' -> ', @order)
 		;
 };
 
 subtest 'should handle action-specific routing' => sub {
-	$t->request('/any_action', method => 'GET')
+	$t->request(GET '/any_action')
 		->status_is(200)
 		->body_is('GET')
 		;
 
-	$t->request('/any_action', method => 'POST')
+	$t->request(POST '/any_action')
 		->status_is(200)
 		->body_is('POST')
 		;
 
-	$t->request('/only_post', method => 'GET')
+	$t->request(GET '/only_post')
 		->status_is(404)
 		;
 
-	$t->request('/only_post', method => 'POST')
+	$t->request(POST '/only_post')
 		->status_is(200)
 		->body_is('POST')
 		;
 };
 
 done_testing;
-

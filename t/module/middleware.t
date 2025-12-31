@@ -2,6 +2,7 @@ use v5.40;
 use Test2::V1 -ipP;
 use Thunderhorse::Test;
 use Future::AsyncAwait;
+use HTTP::Request::Common;
 
 ################################################################################
 # This tests whether Thunderhorse Middleware module works
@@ -214,7 +215,7 @@ subtest 'should execute middleware in order based on order config' => sub {
 	my $t = Thunderhorse::Test->new(app => MiddlewareModuleApp->new);
 
 	@execution_order = ();
-	$t->request('/test')
+	$t->request(GET '/test')
 		->status_is(200)
 		->body_is('success')
 		;
@@ -236,7 +237,7 @@ subtest 'should execute middleware alphabetically when no order specified' => su
 	my $t = Thunderhorse::Test->new(app => AlphabeticalMiddlewareApp->new);
 
 	@execution_order = ();
-	$t->request('/test')
+	$t->request(GET '/test')
 		->status_is(200)
 		->body_is('alphabetical')
 		;
@@ -258,7 +259,7 @@ subtest 'should handle mixed order specifications correctly' => sub {
 	my $t = Thunderhorse::Test->new(app => MixedOrderMiddlewareApp->new);
 
 	@execution_order = ();
-	$t->request('/test')
+	$t->request(GET '/test')
 		->status_is(200)
 		->body_is('mixed')
 		;
@@ -280,7 +281,7 @@ subtest 'should load PAGI::Middleware without prefix and execute in order' => su
 	my $t = Thunderhorse::Test->new(app => PAGIMiddlewareApp->new);
 
 	@execution_order = ();
-	$t->request('/test')
+	$t->request(GET '/test')
 		->status_is(200)
 		->header_is('Content-Length', 9)
 		->body_is('test body')
