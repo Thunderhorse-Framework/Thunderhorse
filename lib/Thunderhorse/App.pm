@@ -76,6 +76,14 @@ sub _build_app_controller ($self)
 	return $self->_build_controller('Thunderhorse::AppController');
 }
 
+sub _build_context ($self, @pagi)
+{
+	return Thunderhorse::Context->new(
+		app => $self,
+		pagi => \@pagi,
+	);
+}
+
 sub router ($self)
 {
 	my $router = $self->_router;
@@ -135,10 +143,7 @@ async sub pagi ($self, $scope, $receive, $send)
 		unless $scope_type =~ m/^(http|sse|websocket)$/;
 
 	$scope = {$scope->%*};
-	my $ctx = Thunderhorse::Context->new(
-		app => $self,
-		pagi => [$scope, $receive, $send],
-	);
+	my $ctx = $self->_build_context($scope, $receive, $send);
 
 	$scope->{thunderhorse} = $ctx;
 
