@@ -38,6 +38,15 @@ sub _can_method ($self, $method)
 	return exists $self->app->extra_methods->{controller}{$method};
 }
 
+sub url_for ($self, $name, @args)
+{
+	my $loc = $self->router->find($name);
+	Gears::X::Thunderhorse->raise("no such route '$name'")
+		unless defined $loc;
+
+	return $loc->build(@args);
+}
+
 sub render_error ($self, $ctx, $code, $message = undef)
 {
 	$self->app->render_error($self, $ctx, $code, $message);
