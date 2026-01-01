@@ -62,20 +62,20 @@ my $app = TemplateApp->new;
 
 subtest 'should render template from file with wrapper' => sub {
 	http $app, GET '/test';
-	status_is 200;
-	header_is 'Content-Type', 'text/html; charset=utf-8';
+	http_status_is 200;
+	http_header_is 'Content-Type', 'text/html; charset=utf-8';
 	like http->text, qr{^zażółć gęślą jaźń Hello World!\v+$}, 'body ok';
 };
 
 subtest 'should render inline template' => sub {
 	http $app, GET '/test-inline';
-	status_is 200;
-	body_is 'Hello Inline!';
+	http_status_is 200;
+	http_text_is 'Hello Inline!';
 };
 
 subtest 'should render DATA template' => sub {
 	http $app, GET '/test-data';
-	status_is 200;
+	http_status_is 200;
 	like http->text, qr{^Data contents\v+$}, 'body ok';
 
 	# again - test handle rewinding

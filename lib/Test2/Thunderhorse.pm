@@ -10,9 +10,9 @@ use Exporter 'import';
 
 our @EXPORT = qw(
 	http
-	status_is
-	header_is
-	body_is
+	http_status_is
+	http_header_is
+	http_text_is
 	websocket
 	sse
 );
@@ -77,7 +77,7 @@ sub http (@args)
 	return _http @args;
 }
 
-sub status_is ($expected)
+sub http_status_is ($expected)
 {
 	my $ctx = context();
 
@@ -90,7 +90,7 @@ sub status_is ($expected)
 	return $pass;
 }
 
-sub body_is ($expected)
+sub http_text_is ($expected)
 {
 	my $ctx = context();
 
@@ -103,7 +103,7 @@ sub body_is ($expected)
 	return $pass;
 }
 
-sub header_is ($header, $expected)
+sub http_header_is ($header, $expected)
 {
 	my $ctx = context();
 
@@ -192,9 +192,9 @@ Test2::Thunderhorse - Test2-native testing tools for Thunderhorse applications
 
 	# Test HTTP endpoints
 	http $app, GET '/hello';
-	status_is 200;
-	header_is 'Content-Type', 'text/html; charset=utf-8';
-	body_is 'Hello World';
+	http_status_is 200;
+	http_header_is 'Content-Type', 'text/html; charset=utf-8';
+	http_text_is 'Hello World';
 
 	# Test WebSocket connections
 	websocket $app, '/ws/echo';
@@ -240,29 +240,42 @@ functions like C<GET>, C<POST>, C<PUT>, C<DELETE>, etc.
 The returned response object is a L<PAGI::Test::Response> object with
 methods like C<status>, C<text>, C<json>, C<header>, etc.
 
-=head2 status_is
+=head2 http_status_is
 
-	status_is 200;
-	status_is 404;
+	http_status_is 200;
+	http_status_is 404;
 
 Tests that the last HTTP response status code matches the expected value. This
 is a Test2 assertion that will pass or fail appropriately.
 
-=head2 header_is
+This helper is here to test a common case of comparing the HTTP status code. It
+works the same as C<< is http->status, $status, 'status ok' >>. Use C<<
+http->status >> with other Test2 tools to do more complex comparisons.
 
-	header_is 'Content-Type', 'text/html; charset=utf-8';
-	header_is 'X-Custom-Header', 'value';
+=head2 http_header_is
+
+	http_header_is 'Content-Type', 'text/html; charset=utf-8';
+	http_header_is 'X-Custom-Header', 'value';
 
 Tests that a specific header in the last HTTP response matches the expected
 value. This is a Test2 assertion.
 
-=head2 body_is
+This helper is here to test a common case of comparing the HTTP header's value.
+It works the same as C<< is http->header($header), $value, "$header header ok"
+>>. Use C<< http->header >> with other Test2 tools to do more complex
+comparisons.
 
-	body_is 'Hello World';
-	body_is '{"status":"ok"}';
+=head2 http_text_is
+
+	http_text_is 'Hello World';
+	http_text_is '{"status":"ok"}';
 
 Tests that the body of the last HTTP response matches the expected value. This
 is a Test2 assertion.
+
+This helper is here to test a common case of comparing the HTTP body. It
+works the same as C<< is http->text, $body, 'body ok' >>. Use C<<
+http->text >> with other Test2 tools to do more complex comparisons.
 
 =head2 websocket
 
@@ -339,8 +352,8 @@ C<event>, C<id>
 
 	subtest 'should handle GET request' => sub {
 		http $app, GET '/api/users';
-		status_is 200;
-		header_is 'Content-Type', 'application/json; charset=utf-8';
+		http_status_is 200;
+		http_header_is 'Content-Type', 'application/json; charset=utf-8';
 
 		my $data = http->json;
 		is scalar($data->@*), 3, 'got 3 users';
@@ -353,8 +366,8 @@ C<event>, C<id>
 			Content_Type => 'application/json',
 			Content => '{"name":"John"}';
 
-		status_is 201;
-		body_is '{"status":"created"}';
+		http_status_is 201;
+		http_text_is '{"status":"created"}';
 	};
 
 =head2 WebSocket Testing

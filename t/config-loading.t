@@ -75,8 +75,8 @@ subtest 'should load controllers from config' => sub {
 	);
 
 	http $app, GET '/from-config';
-	status_is 200;
-	body_is 'controller: loaded';
+	http_status_is 200;
+	http_text_is 'controller: loaded';
 };
 
 subtest 'should load modules from config' => sub {
@@ -91,8 +91,8 @@ subtest 'should load modules from config' => sub {
 	);
 
 	http $app, GET '/module-test';
-	status_is 200;
-	body_is 'module: configured';
+	http_status_is 200;
+	http_text_is 'module: configured';
 };
 
 subtest 'should load both controllers and modules from config' => sub {
@@ -110,12 +110,12 @@ subtest 'should load both controllers and modules from config' => sub {
 	);
 
 	http $app, GET '/from-config';
-	status_is 200;
-	body_is 'controller: loaded';
+	http_status_is 200;
+	http_text_is 'controller: loaded';
 
 	http $app, GET '/module-test';
-	status_is 200;
-	body_is 'module: combined';
+	http_status_is 200;
+	http_text_is 'module: combined';
 };
 
 subtest 'should load from config file' => sub {
@@ -124,22 +124,22 @@ subtest 'should load from config file' => sub {
 	);
 
 	http $app, GET '/from-config';
-	status_is 200;
-	body_is 'controller: loaded';
+	http_status_is 200;
+	http_text_is 'controller: loaded';
 
 	http $app, GET '/module-test';
-	status_is 200;
-	body_is 'module: from_file';
+	http_status_is 200;
+	http_text_is 'module: from_file';
 };
 
 subtest 'should handle empty config gracefully' => sub {
 	my $app = ConfigApp->new;
 
 	http $app, GET '/from-config';
-	status_is 404;
+	http_status_is 404;
 
 	http $app, GET '/module-test';
-	status_is 500;
+	http_status_is 500;
 };
 
 done_testing;

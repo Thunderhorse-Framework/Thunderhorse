@@ -65,8 +65,8 @@ my $app = EdgeApp->new;
 
 subtest 'should handle multiple locations for the same route' => sub {
 	http $app, GET '/multi';
-	status_is 200;
-	body_is 'this gets rendered';
+	http_status_is 200;
+	http_text_is 'this gets rendered';
 };
 
 subtest 'should respect route ordering' => sub {
@@ -83,25 +83,25 @@ subtest 'should respect route ordering' => sub {
 	);
 
 	http $app, GET '/order';
-	status_is 200;
-	body_is join ' -> ', @order;
+	http_status_is 200;
+	http_text_is join ' -> ', @order;
 };
 
 subtest 'should handle action-specific routing' => sub {
 	http $app, GET '/any_action';
-	status_is 200;
-	body_is 'GET';
+	http_status_is 200;
+	http_text_is 'GET';
 
 	http $app, POST '/any_action';
-	status_is 200;
-	body_is 'POST';
+	http_status_is 200;
+	http_text_is 'POST';
 
 	http $app, GET '/only_post';
-	status_is 404;
+	http_status_is 404;
 
 	http $app, POST '/only_post';
-	status_is 200;
-	body_is 'POST';
+	http_status_is 200;
+	http_text_is 'POST';
 };
 
 done_testing;

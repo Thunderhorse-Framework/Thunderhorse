@@ -111,8 +111,8 @@ my $app = MiddlewareApp->new;
 subtest 'should execute bridge middleware before nested middleware and route' => sub {
 	@order = ();
 	http $app, GET '/with-middleware/nested';
-	status_is 200;
-	body_is 'nested route';
+	http_status_is 200;
+	http_text_is 'nested route';
 
 	is \@order, ['bridge-mw', 'bridge-handler', 'nested-mw', 'nested-route'],
 		'middlewares execute in correct order';
@@ -121,8 +121,8 @@ subtest 'should execute bridge middleware before nested middleware and route' =>
 subtest 'should execute bridge middleware before inherited route' => sub {
 	@order = ();
 	http $app, GET '/with-middleware/inherited';
-	status_is 200;
-	body_is 'inherited route';
+	http_status_is 200;
+	http_text_is 'inherited route';
 
 	is \@order, ['bridge-mw', 'bridge-handler', 'inherited-route'],
 		'bridge middleware executes before inherited route';
@@ -131,8 +131,8 @@ subtest 'should execute bridge middleware before inherited route' => sub {
 subtest 'should execute route with no middleware' => sub {
 	@order = ();
 	http $app, GET '/no-middleware';
-	status_is 200;
-	body_is 'plain route';
+	http_status_is 200;
+	http_text_is 'plain route';
 
 	is \@order, ['plain-route'], 'no middleware executed';
 };
@@ -140,9 +140,9 @@ subtest 'should execute route with no middleware' => sub {
 subtest 'should have ContentLength header' => sub {
 	@order = ();
 	http $app, GET '/content-length';
-	status_is 200;
-	header_is 'Content-Length', 19;
-	body_is 'content length test';
+	http_status_is 200;
+	http_header_is 'Content-Length', 19;
+	http_text_is 'content length test';
 };
 
 done_testing;

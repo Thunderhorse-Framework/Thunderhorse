@@ -48,8 +48,8 @@ my $app = ModuleApp->new;
 
 subtest 'should have access to module method' => sub {
 	http $app, GET '/test';
-	status_is 200;
-	body_is 'custom: works';
+	http_status_is 200;
+	http_text_is 'custom: works';
 };
 
 done_testing;

@@ -73,45 +73,45 @@ my $app = BasicApp->new;
 
 subtest 'should route to a valid location' => sub {
 	http $app, GET '/foundation/placeholder';
-	status_is 200;
-	header_is 'content-type', 'text/html; charset=utf-8';
-	body_is 'Thunderhorse::AppController;Thunderhorse::Context::Facade;placeholder';
+	http_status_is 200;
+	http_header_is 'content-type', 'text/html; charset=utf-8';
+	http_text_is 'Thunderhorse::AppController;Thunderhorse::Context::Facade;placeholder';
 };
 
 subtest 'should route to 404' => sub {
 	http $app, GET '/foundation';
-	status_is 404;
-	header_is 'Content-Type', 'text/plain; charset=utf-8';
-	body_is 'Not Found';
+	http_status_is 404;
+	http_header_is 'Content-Type', 'text/plain; charset=utf-8';
+	http_text_is 'Not Found';
 };
 
 subtest 'should render text set by res->text' => sub {
 	http $app, GET '/send';
-	status_is 200;
-	header_is 'Content-Type', 'text/plain; charset=utf-8';
-	body_is 'this gets rendered';
+	http_status_is 200;
+	http_header_is 'Content-Type', 'text/plain; charset=utf-8';
+	http_text_is 'this gets rendered';
 };
 
 subtest 'should pass bridge and reach success route' => sub {
 	http $app, GET '/bridge/0/success';
-	status_is 200;
-	header_is 'Content-Type', 'text/html; charset=utf-8';
-	body_is 'bridge passed';
+	http_status_is 200;
+	http_header_is 'Content-Type', 'text/html; charset=utf-8';
+	http_text_is 'bridge passed';
 };
 
 subtest 'should fail bridge and return 403' => sub {
 	http $app, GET '/bridge/1/success';
-	status_is 403;
-	header_is 'Content-Type', 'text/plain; charset=utf-8';
-	# TODO: body_is('Forbidden')
-	body_is 'Error';
+	http_status_is 403;
+	http_header_is 'Content-Type', 'text/plain; charset=utf-8';
+	# TODO: http_text_is('Forbidden')
+	http_text_is 'Error';
 };
 
 subtest 'should pass unimplemented bridge' => sub {
 	http $app, GET '/bridge2/success';
-	status_is 200;
-	header_is 'Content-Type', 'text/html; charset=utf-8';
-	body_is 'bridge passed';
+	http_status_is 200;
+	http_header_is 'Content-Type', 'text/html; charset=utf-8';
+	http_text_is 'bridge passed';
 };
 
 done_testing;

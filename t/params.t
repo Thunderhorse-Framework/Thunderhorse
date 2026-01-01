@@ -67,61 +67,61 @@ my $app = ParamsApp->new;
 
 subtest 'should handle single query parameter' => sub {
 	http $app, GET '/get?foo=bar';
-	status_is 200;
+	http_status_is 200;
 	like http->text, qr/^foo: bar$/m, 'body ok';
 };
 
 subtest 'should handle multiple query parameters' => sub {
 	http $app, GET '/get?foo=bar&baz=qux';
-	status_is 200;
+	http_status_is 200;
 	like http->text, qr/^foo: bar$/m, 'body ok';
 	like http->text, qr/^baz: qux$/m, 'body ok';
 };
 
 subtest 'should handle query parameter with multiple values' => sub {
 	http $app, GET '/get?foo=bar&foo=baz';
-	status_is 200;
+	http_status_is 200;
 	like http->text, qr/^foo: bar, baz$/m, 'body ok';
 };
 
 subtest 'should handle single form parameter' => sub {
 	http $app, POST '/post', [foo => 'bar'];
-	status_is 200;
+	http_status_is 200;
 	like http->text, qr/^foo: bar$/m, 'body ok';
 };
 
 subtest 'should handle multiple form parameters' => sub {
 	http $app, POST '/post', [foo => 'bar', baz => 'qux'];
-	status_is 200;
+	http_status_is 200;
 	like http->text, qr/^foo: bar$/m, 'body ok';
 	like http->text, qr/^baz: qux$/m, 'body ok';
 };
 
 subtest 'should handle form parameter with multiple values' => sub {
 	http $app, POST '/post', [foo => 'bar', foo => 'baz'];
-	status_is 200;
+	http_status_is 200;
 	like http->text, qr/^foo: bar, baz$/m, 'body ok';
 };
 
 subtest 'should handle custom headers' => sub {
 	http $app, GET '/headers', 'x-custom-header' => 'test-value';
-	status_is 200;
+	http_status_is 200;
 	like http->text, qr/^x-custom-header: test-value$/m, 'body ok';
 };
 
 subtest 'should handle multiple header values' => sub {
 	http $app, GET '/headers', 'x-multi' => 'value1', 'x-multi' => 'value2';
-	status_is 200;
+	http_status_is 200;
 	like http->text, qr/^x-multi: value1, value2$/m, 'body ok';
 };
 
 subtest 'should handle headers together with form' => sub {
 	http $app, POST '/headers', [foo => 'bar'], 'x-multi' => 'value';
-	status_is 200;
+	http_status_is 200;
 	like http->text, qr/^x-multi: value$/m, 'body ok';
 
 	http $app, POST '/post', [foo => 'bar'], 'x-multi' => 'value';
-	status_is 200;
+	http_status_is 200;
 	like http->text, qr/^foo: bar$/m, 'body ok';
 };
 

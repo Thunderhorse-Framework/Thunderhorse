@@ -59,8 +59,8 @@ subtest 'should have access to log method' => sub {
 	$appender->buffer('');    # Clear buffer
 
 	http $app, GET '/test-log';
-	status_is 200;
-	body_is 'logged';
+	http_status_is 200;
+	http_text_is 'logged';
 
 	my $buffer = $appender->buffer();
 	like($buffer, qr/^\[.+\] \[INFO\] Test message/, 'log message captured');
@@ -70,7 +70,7 @@ subtest 'should catch and log errors' => sub {
 	$appender->buffer('');    # Clear buffer
 
 	http $app, GET '/test-error';
-	status_is 500;
+	http_status_is 500;
 
 	my $buffer = $appender->buffer();
 	like($buffer, qr/^\[.+\] \[ERROR\] Test error/, 'error message captured');

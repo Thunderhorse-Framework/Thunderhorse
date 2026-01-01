@@ -56,9 +56,9 @@ my $app = PagiApp->new;
 
 subtest 'should route to a valid PAGI location' => sub {
 	http $app, GET '/pagi_app';
-	status_is 200;
-	header_is 'Content-Type', 'text/plain';
-	body_is 'Hello from PAGI';
+	http_status_is 200;
+	http_header_is 'Content-Type', 'text/plain';
+	http_text_is 'Hello from PAGI';
 };
 
 done_testing;

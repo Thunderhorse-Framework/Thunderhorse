@@ -86,9 +86,9 @@ my $app = FacadeApp->new;
 
 subtest 'should render /good' => sub {
 	http $app, GET '/good';
-	status_is 200;
-	header_is 'Content-Type', 'text/plain; charset=utf-8';
-	body_is 'Something';
+	http_status_is 200;
+	http_header_is 'Content-Type', 'text/plain; charset=utf-8';
+	http_text_is 'Something';
 };
 
 subtest 'should not render /consumed' => sub {
@@ -99,7 +99,7 @@ subtest 'should not render /consumed' => sub {
 
 subtest 'should not render /bad' => sub {
 	http $app, GET '/bad';
-	status_is 500;
+	http_status_is 500;
 	like http->exception, qr/\Qforgot await?\E/, 'exception ok';
 };
 

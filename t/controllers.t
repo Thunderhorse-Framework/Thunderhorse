@@ -76,16 +76,16 @@ my $app = ControllersApp->new;
 
 subtest 'should route to a valid location' => sub {
 	http $app, GET '/base';
-	status_is 200;
-	body_is 'base: Thunderhorse::AppController';
+	http_status_is 200;
+	http_text_is 'base: Thunderhorse::AppController';
 
 	http $app, GET '/internal';
-	status_is 200;
-	body_is 'internal: ControllersApp::Controller::Test';
+	http_status_is 200;
+	http_text_is 'internal: ControllersApp::Controller::Test';
 
 	http $app, GET '/external';
-	status_is 200;
-	body_is 'external: TestC2';
+	http_status_is 200;
+	http_text_is 'external: TestC2';
 };
 
 done_testing;
