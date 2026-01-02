@@ -24,7 +24,7 @@ package TemplateApp {
 		);
 
 		$self->router->add(
-			'/test' => {
+			'/test/?ex' => {
 				to => 'test',
 			}
 		);
@@ -48,9 +48,10 @@ package TemplateApp {
 		);
 	}
 
-	sub test ($self, $ctx)
+	sub test ($self, $ctx, $ex)
 	{
-		return $self->render('test.tt', {name => 'World'});
+		$ex = defined $ex ? ".$ex" : '';
+		return $self->render("test$ex", {name => 'World'});
 	}
 
 	sub test_inline ($self, $ctx)
@@ -73,6 +74,13 @@ my $app = TemplateApp->new;
 
 subtest 'should render template from file with wrapper' => sub {
 	http $app, GET '/test';
+	http_status_is 200;
+	http_header_is 'Content-Type', 'text/html; charset=utf-8';
+	like http->text, qr{^zażółć gęślą jaźń Hello World!\v+$}, 'body ok';
+};
+
+subtest 'should render template from file with a custom extension' => sub {
+	http $app, GET '/test/tpl';
 	http_status_is 200;
 	http_header_is 'Content-Type', 'text/html; charset=utf-8';
 	like http->text, qr{^zażółć gęślą jaźń Hello World!\v+$}, 'body ok';

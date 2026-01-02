@@ -32,6 +32,9 @@ sub process ($self, $template, $vars)
 {
 	my $pos = ref $template eq 'GLOB' ? tell $template : undef;
 
+	$template =~ s{(\..+)?$}{$1 // '.tt' }e
+		unless ref $template;
+
 	my $output;
 	$self->engine->process($template, $vars, \$output)
 		or Gears::X::Template->raise('' . $self->engine->error);
