@@ -72,6 +72,7 @@ subtest 'should have access to log method' => sub {
 	like $logged, qr/^\[.+\] \[INFO\] seen$/m, 'log message captured';
 	like $logged, qr/^\[.+\] \[FATAL\] Test message$/m, 'log message captured';
 	unlike $logged, qr/unseen/, 'unseen message not logged';
+	unlike $logged, qr/\v\v/, 'double newlines not logged';
 };
 
 subtest 'should catch and log errors' => sub {
@@ -81,6 +82,7 @@ subtest 'should catch and log errors' => sub {
 	http_status_is 500;
 
 	like $logged, qr/^\[.+\] \[ERROR\] Test error$/m, 'error message captured';
+	unlike $logged, qr/\v\v/, 'double newlines not logged';
 };
 
 done_testing;
