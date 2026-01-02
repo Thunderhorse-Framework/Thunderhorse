@@ -1,12 +1,18 @@
 use v5.40;
 use Test2::V1 -ipP;
 use Test2::Thunderhorse;
-use Log::Log4perl;
 use HTTP::Request::Common;
 
 ################################################################################
 # This tests whether Thunderhorse Logger module works
 ################################################################################
+
+my $logged = '';
+
+sub save_log ($msg)
+{
+	$logged .= $msg->{message};
+}
 
 package LoggerApp {
 	use Mooish::Base -standard;
@@ -18,12 +24,12 @@ package LoggerApp {
 		# Configure Log4perl with TestBuffer appender to capture output
 		$self->load_module(
 			'Logger' => {
-				conf => \<<~CONF,
-				log4perl.rootLogger=DEBUG, test
-				log4perl.appender.test=Log::Log4perl::Appender::TestBuffer
-				log4perl.appender.test.layout=PatternLayout
-				log4perl.appender.test.layout.ConversionPattern=%m%n
-				CONF
+				outputs => [
+					forward => {
+						forward_to => \&main::save_log,
+						maxlevel => 'info',
+					},
+				]
 			}
 		);
 
@@ -42,7 +48,9 @@ package LoggerApp {
 
 	sub test_log ($self, $ctx)
 	{
-		$self->log(info => 'Test message');
+		$self->log(debug => 'unseen');
+		$self->log(info => 'seen');
+		$self->log(fatal => 'Test message');
 		return 'logged';
 	}
 
@@ -53,27 +61,26 @@ package LoggerApp {
 };
 
 my $app = LoggerApp->new;
-my $appender = Log::Log4perl->appenders->{test};
 
 subtest 'should have access to log method' => sub {
-	$appender->buffer('');    # Clear buffer
+	$logged = '';    # Clear buffer
 
 	http $app, GET '/test-log';
 	http_status_is 200;
 	http_text_is 'logged';
 
-	my $buffer = $appender->buffer();
-	like($buffer, qr/^\[.+\] \[INFO\] Test message/, 'log message captured');
+	like $logged, qr/^\[.+\] \[INFO\] seen$/m, 'log message captured';
+	like $logged, qr/^\[.+\] \[FATAL\] Test message$/m, 'log message captured';
+	unlike $logged, qr/unseen/, 'unseen message not logged';
 };
 
 subtest 'should catch and log errors' => sub {
-	$appender->buffer('');    # Clear buffer
+	$logged = '';    # Clear buffer
 
 	http [$app, raise_app_exceptions => false], GET '/test-error';
 	http_status_is 500;
 
-	my $buffer = $appender->buffer();
-	like($buffer, qr/^\[.+\] \[ERROR\] Test error/, 'error message captured');
+	like $logged, qr/^\[.+\] \[ERROR\] Test error$/m, 'error message captured';
 };
 
 done_testing;

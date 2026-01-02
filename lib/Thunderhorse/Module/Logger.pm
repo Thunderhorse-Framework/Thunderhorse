@@ -4,7 +4,7 @@ use v5.40;
 use Mooish::Base -standard;
 
 use Gears::X::Thunderhorse;
-use Gears::Logger::Log4perl;
+use Gears::Logger::Handler;
 
 use Future::AsyncAwait;
 
@@ -19,7 +19,7 @@ sub _build_logger ($self)
 {
 	my $config = $self->config;
 
-	return Gears::Logger::Log4perl->new($config->%*);
+	return Gears::Logger::Handler->new($config->%*);
 }
 
 sub build ($self)
