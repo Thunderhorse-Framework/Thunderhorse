@@ -124,7 +124,7 @@ subtest 'should handle missing conf directory gracefully' => sub {
 subtest 'should integrate with Thunderhorse::App' => sub {
 	local $ENV{PAGI_ENV} = 'production';
 
-	my $app = TestApp->new(initial_config => 't/config/merge');
+	my $app = TestApp->new(initial_config => 'config/merge');
 
 	is $app->config->config, {
 		base => 'production_override',

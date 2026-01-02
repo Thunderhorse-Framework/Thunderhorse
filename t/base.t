@@ -2,6 +2,7 @@ use v5.40;
 use Test2::V1 -ipP;
 use Test2::Thunderhorse;
 use HTTP::Request::Common;
+use Path::Tiny qw(cwd);
 
 use Future::AsyncAwait;
 
@@ -88,6 +89,8 @@ package BasicApp {
 };
 
 my $app = BasicApp->new;
+
+is $app->path->stringify, cwd->child('t')->stringify, 'application path ok';
 
 subtest 'should handle lifespan events' => sub {
 	my $state = pagi_run $app, sub { };

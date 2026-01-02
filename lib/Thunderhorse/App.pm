@@ -9,13 +9,21 @@ use Thunderhorse::Context;
 use Thunderhorse::Router;
 use Thunderhorse::Controller;
 use Thunderhorse::AppController;
+use Path::Tiny;
 
 use HTTP::Status qw(status_message);
 use IO::Async::Loop;
 use Future::AsyncAwait;
 use PAGI::Lifespan;
+use FindBin;
 
 extends 'Gears::App';
+
+has param 'path' => (
+	coerce => (InstanceOf ['Path::Tiny'])
+		->plus_coercions(Str, q{ Path::Tiny::path($_) }),
+	default => sub { $FindBin::Bin },
+);
 
 has param 'env' => (
 	isa => Enum ['production', 'development', 'test'],
@@ -98,7 +106,7 @@ sub configure ($self)
 
 	my $preconf = $self->initial_config;
 	if (!ref $preconf) {
-		$config->load_from_files($preconf, $self->env);
+		$config->load_from_files($self->path->child($preconf), $self->env);
 	}
 	else {
 		$config->add(var => $preconf);

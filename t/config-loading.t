@@ -120,7 +120,7 @@ subtest 'should load both controllers and modules from config' => sub {
 
 subtest 'should load from config file' => sub {
 	my $app = ConfigApp->new(
-		initial_config => 't/config/loading',
+		initial_config => 'config/loading',
 	);
 
 	http $app, GET '/from-config';
