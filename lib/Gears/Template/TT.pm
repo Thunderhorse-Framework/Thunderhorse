@@ -34,7 +34,7 @@ sub process ($self, $template, $vars)
 
 	my $output;
 	$self->engine->process($template, $vars, \$output)
-		or Gears::X::Template->raise($self->engine->error);
+		or Gears::X::Template->raise('' . $self->engine->error);
 
 	# rewind if we were passed a handle
 	seek $template, $pos, 0

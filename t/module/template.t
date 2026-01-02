@@ -40,6 +40,12 @@ package TemplateApp {
 				to => 'test_data',
 			}
 		);
+
+		$self->router->add(
+			'/test-bad' => {
+				to => 'test_bad',
+			}
+		);
 	}
 
 	sub test ($self, $ctx)
@@ -55,6 +61,11 @@ package TemplateApp {
 	sub test_data ($self, $ctx)
 	{
 		return $self->render(\*main::DATA);
+	}
+
+	sub test_bad ($self, $ctx)
+	{
+		return $self->render('bad_template');
 	}
 }
 
@@ -81,6 +92,16 @@ subtest 'should render DATA template' => sub {
 	# again - test handle rewinding
 	http $app, GET '/test-data';
 	like http->text, qr{^Data contents\v+$}, 'body ok';
+};
+
+subtest 'should not render bad template' => sub {
+	my $err = dies {
+		http $app, GET '/test-bad';
+		diag http->text;
+	};
+
+	note $err;
+	isa_ok $err, ['Gears::X'], 'bad template ok';
 };
 
 done_testing;
