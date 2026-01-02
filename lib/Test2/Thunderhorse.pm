@@ -9,6 +9,7 @@ use Carp qw(croak);
 use Exporter 'import';
 
 our @EXPORT = qw(
+	pagi_run
 	http
 	http_status_is
 	http_header_is
@@ -21,19 +22,20 @@ die 'Error: Test2::Thunderhorse loaded in a PAGI environment'
 	if ($ENV{PAGI_ENV} // 'test') ne 'test';
 $ENV{PAGI_ENV} = 'test';
 
+our $THIS_CLIENT;
 my $LAST_HTTP;
 my $LAST_WS;
 my $LAST_SSE;
 
-sub _build_client ($app)
+sub _build_client ($app, %args)
 {
-	my %args;
+	return $THIS_CLIENT if defined $THIS_CLIENT;
 
 	if (ref $app eq 'ARRAY') {
-		%args = ($app->@[1, $app->$#*], app => $app->[0]->run);
+		%args = ($app->@[1, $app->$#*], app => $app->[0]->run, %args);
 	}
 	elsif (ref $app eq 'HASH') {
-		%args = $app->%*;
+		%args = ($app->%*, %args);
 	}
 	else {
 		$args{app} = $app->run;
@@ -43,6 +45,18 @@ sub _build_client ($app)
 		unless exists $args{raise_app_exceptions};
 
 	return PAGI::Test::Client->new(%args);
+}
+
+sub pagi_run ($app, $code)
+{
+	my $client = _build_client($app, lifespan => true);
+	local $THIS_CLIENT = $client;
+
+	$client->start;
+	$code->();
+	$client->stop;
+
+	return $client->state;
 }
 
 sub _http ($app, $http_request, %args)
@@ -224,6 +238,17 @@ non-test environments. All exported functions integrate with Test2's context
 system for proper test result reporting.
 
 =head1 EXPORTED FUNCTIONS
+
+=head2 pagi_run
+
+	my $state = pagi_run $app, $coderef;
+
+Fires a PAGI startup lifecycle event, then executes the C<$coderef>. This
+triggers C<on_startup> and C<on_shutdown> hooks in Thunderhorse, and may be
+mandatory depending on the app configuration. Inside C<$coderef>, test the app
+normally using other functions.
+
+Returns the shared state from lifespan.
 
 =head2 http
 

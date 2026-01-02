@@ -3,6 +3,8 @@ use Test2::V1 -ipP;
 use Test2::Thunderhorse;
 use HTTP::Request::Common;
 
+use Future::AsyncAwait;
+
 ################################################################################
 # This tests whether Thunderhorse basic app works
 ################################################################################
@@ -13,6 +15,10 @@ package BasicApp {
 	use Gears::X::HTTP;
 
 	extends 'Thunderhorse::App';
+
+	has field 'events' => (
+		default => sub { {} },
+	);
 
 	sub build ($self)
 	{
@@ -67,9 +73,32 @@ package BasicApp {
 			},
 		);
 	}
+
+	async sub on_startup ($self, $state)
+	{
+		$self->events->{startup} = true;
+		$state->{th_started} = true;
+	}
+
+	async sub on_shutdown ($self, $state)
+	{
+		$self->events->{shutdown} = true;
+		$state->{th_stopped} = true;
+	}
 };
 
 my $app = BasicApp->new;
+
+subtest 'should handle lifespan events' => sub {
+	my $state = pagi_run $app, sub { };
+
+	ok $app->events->{startup}, 'startup ok';
+	ok $app->events->{shutdown}, 'shutdown ok';
+
+	# TODO: PAGI::Middleware uses wrong state
+	# ok $state->{th_started}, 'startup hook ok';
+	# ok $state->{th_stopped}, 'shutdown hook ok';
+};
 
 subtest 'should route to a valid location' => sub {
 	http $app, GET '/foundation/placeholder';

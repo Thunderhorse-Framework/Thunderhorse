@@ -13,6 +13,7 @@ use Thunderhorse::AppController;
 use HTTP::Status qw(status_message);
 use IO::Async::Loop;
 use Future::AsyncAwait;
+use PAGI::Lifespan;
 
 extends 'Gears::App';
 
@@ -186,6 +187,12 @@ sub run ($self)
 		return $self->pagi(@args);
 	};
 
+	$pagi = PAGI::Lifespan->wrap(
+		$pagi,
+		startup => sub { $self->on_startup(@_) },
+		shutdown => sub { $self->on_shutdown(@_) },
+	);
+
 	foreach my $mw ($self->extra_wrappers->@*) {
 		if (ref $mw eq 'CODE') {
 			$pagi = $mw->($pagi);
@@ -199,6 +206,14 @@ sub run ($self)
 	}
 
 	return $pagi;
+}
+
+async sub on_startup ($self, $state)
+{
+}
+
+async sub on_shutdown ($self, $state)
+{
 }
 
 async sub render_error ($self, $controller, $ctx, $code, $message = undef)
