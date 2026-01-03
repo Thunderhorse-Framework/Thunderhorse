@@ -75,9 +75,9 @@ has field 'extra_wrappers' => (
 	default => sub { [] },
 );
 
-sub is_production ($self)
+sub BUILD ($self, $)
 {
-	return $self->env eq 'production';
+	$self->late_configure;
 }
 
 sub _build_config ($self)
@@ -109,6 +109,11 @@ sub _build_context ($self, @pagi)
 	);
 }
 
+sub is_production ($self)
+{
+	return $self->env eq 'production';
+}
+
 sub router ($self)
 {
 	my $router = $self->_router;
@@ -128,14 +133,17 @@ sub configure ($self)
 		$config->add(var => $preconf);
 	}
 
-	foreach my $controller ($config->get('controllers', [])->@*) {
-		$self->load_controller($controller);
-	}
-
 	# TODO: module dependencies and ordering
 	my %modules = $config->get('modules', {})->%*;
 	foreach my $module_name (sort keys %modules) {
 		$self->load_module($module_name, $modules{$module_name});
+	}
+}
+
+sub late_configure ($self)
+{
+	foreach my $controller ($self->config->get('controllers', [])->@*) {
+		$self->load_controller($controller);
 	}
 }
 
