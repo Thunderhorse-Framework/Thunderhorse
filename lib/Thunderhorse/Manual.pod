@@ -73,15 +73,33 @@ Most minimal Thunderhorse application (which does nothing) looks like this:
 To run it, a perl file is required, which will load, instantiate and run it (as
 the last expression):
 
+	# app.pl
 	use lib 'lib';
 	use MyApp;
 
 	MyApp->new->run;
 
-That file can then be run using C<pagi-server>, which will take the last
+C<app.pl> can now be run using C<pagi-server>, which will take the last
 expression of the file and run it when requests arrive. In the above example,
 all these requests will return HTTP code C<404>, since we haven't declared any
 routing yet.
+
+Of course, for the sake of quick prototyping, C<lib/MyApp.pm> can be merged
+into C<app.pl>. Thunderhorse does not ship with any DSL variant for simple
+apps, since writing the application is easy enough as it is. We believe
+creating such DSL would only cause confusion without any measurable benefit. We
+suggest to not use C<package NAME BLOCK> syntax in this scenario, since it
+makes it much harder to access C<DATA> handle (which will be useful later, in
+L</Template> section):
+
+	package MyApp;
+
+	use v5.40;
+	use Mooish::Base;
+
+	extends 'Thunderhorse::App';
+
+	MyApp->new->run;
 
 =head2 Routing
 
@@ -283,6 +301,20 @@ to avoid consuming the context by accident:
 		# if context is not consumed, continue to next match
 		return undef;
 	}
+
+Bridges only match for paths when a full level is matched, for example the
+above admin bridge will match for C</admin> and C</admin/test>, but not for
+C</admins>. For this reason, all locations under the bridge should start their
+patterns with C</>. The sole exception to this is creating a location under a
+bridge with an empty pattern, which will match the exact same pattern as the
+bridge, but still be under the bridge in the hierarchy:
+
+	# ran after $admin_bridge, but only on the same pattern
+	$admin_bridge->add(
+		'' => {
+			to => 'admin_homepage',
+		},
+	);
 
 =head3 Actions
 
@@ -499,6 +531,24 @@ The first argument is the template name (C<.tt> suffix will be added
 automatically), and the second is a hash reference of variables to pass to the
 template. The method returns the rendered content, which is then sent to the
 client as HTML (if the context is not already consumed).
+
+If the first argument is passed as the reference, the behavior changes:
+
+=over
+
+=item * for GLOB refs, filehandle will be read and its contents will be used as the template
+
+=item * for SCALAR refs, the referenced scalar will be used as the template
+
+=back
+
+For simple apps, it is often useful to render from C<DATA>. GLOB refs will be
+rolled back after reading them automatically.
+
+	sub render_data ($self, $ctx)
+	{
+		return $self->render(\*DATA);
+	}
 
 =head3 Middleware
 
@@ -744,7 +794,10 @@ These hooks are run when a worker is spawned and killed.
 
 Controller hooks allow customization of error handling on a per-controller
 basis. They can be defined in any controller or in the application class (which
-all controllers call by default).
+all controllers call by default). When used in the application class, they will
+be passed an additional argument, which will be a C<$controller> instance, after
+C<$self>. It may be undef if the error did not come from a controller (for
+example the C<404> error).
 
 =head4 on_error
 
