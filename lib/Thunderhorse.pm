@@ -32,11 +32,14 @@ Thunderhorse - A no-compromises brutally-good web framework
 
 =head1 DESCRIPTION
 
-This module lets you blah blah blah.
+Thunderhorse is a PAGI-native web framework. See L<Thunderhorse::Manual> for a
+reference.
+
+This is a stub release which will be fully documented later. Stay tuned.
 
 =head1 SEE ALSO
 
-L<Some::Module>
+L<Gears>
 
 =head1 AUTHOR
 

@@ -1,5 +1,5 @@
 # Thunderhorse
-A PAGI-native web framework
+A no-compromises brutally-good web framework.
 
 ## Code and documentation
 [Thunderhorse on CPAN](https://metacpan.org/release/Thunderhorse)
