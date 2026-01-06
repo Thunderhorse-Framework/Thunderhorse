@@ -759,88 +759,125 @@ key is a hash where keys are module names and values are configuration hashes
 for each module. Both controllers and modules are loaded during application
 initialization, before the C<build> method is called.
 
-=head2 Hooks
+=head2 Hacking and extending
 
-Thunderhorse is easily extensible using hooks. Hooks are methods, usually in
-App or Controller, which can be overridden to do something differently.
+Thunderhorse is very hackable due to the system being based on events and
+callbacks. Events are handled by hooks, while callbacks are executed using
+handlers.
 
-=head3 Lifespan hooks
+=head3 Hooks
 
-Lifespan hooks are called during PAGI application lifecycle, when worker
-processes are started and shut down. They are defined in the application class:
+Hooks are pieces of code which are executed when a certain event is fired in
+the system. There are two usage patterns for event handling with hooks:
 
-	async sub on_startup ($self, $state)
-	{
-		# Called once when worker starts
-		# Initialize resources, connect to databases, etc.
-		say "Application starting up";
-	}
+=over
 
-	async sub on_shutdown ($self, $state)
-	{
-		# Called once when worker is shutting down
-		# Clean up resources, close connections, etc.
-		say "Application shutting down";
-	}
+=item * hook methods
 
-Both hooks are C<async> and receive a C<$state> hash reference that is shared
-across the system. This can be used to store handles or other resources that
-need to be cleaned up, on PAGI level. This is usually not needed, as
-Thunderhorse has access to other means of managing persistent data.
-
-These hooks are run when a worker is spawned and killed.
-
-=head3 Controller hooks
-
-Controller hooks allow customization of error handling on a per-controller
-basis. They can be defined in any controller or in the application class (which
-all controllers call by default). When used in the application class, they will
-be passed an additional argument, which will be a C<$controller> instance, after
-C<$self>. It may be undef if the error did not come from a controller (for
-example the C<404> error).
-
-=head4 on_error
-
-The C<on_error> hook is called when an exception occurs during request
-processing:
-
+	# in controller
 	async sub on_error ($self, $ctx, $error)
 	{
-		if ($error isa 'Gears::X::HTTP') {
-			# HTTP error with status code
-			await $self->render_error($ctx, $error->code);
-		}
-		else {
-			# Some other error
-			die $error;
-		}
+		warn "error occured: $error";
 	}
 
-This hook receives the controller instance, the context, and the error object.
-It should consume the context by sending a response. The default implementation
-handles L<Gears::X::HTTP> exceptions by calling C<render_error>.
+	# in app
+	async sub on_error ($self, $controller, $ctx, $error)
+	{
+		warn "error occured: $error";
+	}
+
+Declaring hook like this allows full control over handling of an event. It can be
+added on controller level or on application level. Overriding any hook method
+can completely change how Thunderhorse handles this type of event. The
+method calls will be awaited, but their return values are ignored.
+
+Hooks methods prioritize controller-specific implementations over
+application-level ones. For example, if a controller defines its own
+C<on_error>, it will be called instead of the application's versions. This
+allows fine-grained control over error handling for different parts of the
+application. By default, all controller implementations delegate their work to
+application's implementation.
+
+Hook methods are useful to change how the event is handled or introduce special
+event handling on the controller level.
+
+=item * Hook notifications
+
+	$app->hook(error => sub ($controller, $ctx, $error) {
+		warn "error occured: $error";
+	});
+
+This use of hooks is easily pluggable into the system from any place and can be
+used to add multiple handlers at once. Only application-wide hook notifications
+are supported. Their return values are completely ignored. System will not
+C<await> for their completion.
+
+They are useful if you need to perform some extra internal tasks when an event
+is fired, without modifying how event will be handled. This is especially
+useful when developing a Thunderhorse module.
+
+=back
+
+Thunderhorse defines a closed set of supported hooks:
+
+=head4 startup
+
+	$app->hook(startup => sub ($state) { ... });
+
+	async sub on_startup ($self, $state) { ... }
+
+This is a lifespan hook, called during PAGI application lifecycle, when worker
+processes is started.
+
+Receives a C<$state> hash reference that is shared across the system. This can
+be used to store handles or other resources that need to be managed on
+per-worker basis.
+
+This hook's method B<cannot be declared on a controller level>.
+
+=head4 shutdown
+
+	$app->hook(shutdown => sub ($state) { ... });
+
+	async sub on_shutdown ($self, $state) { ... }
+
+This is a lifespan hook, called during PAGI application lifecycle, when worker
+processes is killed.
+
+Receives a C<$state> hash reference that is shared across the system. This can
+be used to free handles or other resources that need to be managed on
+per-worker basis.
+
+This hook's method B<cannot be declared on a controller level>.
+
+=head4 error
+
+	$app->hook(error => sub ($controller, $ctx, error) { ... });
+
+	async sub on_error ($self, $ctx, $error) { ... }
+	async sub on_error ($self, $controller, $ctx, $error) { ... }
+
+The C<on_error> hook is called when an exception occurs during request
+processing.
+
+This hook should consume the context by sending a response. The default handler
+calls L</render_error> method a text page with an error message.
+
+=head3 Handlers
+
+Handlers are methods similar to hook methods. They are required to perform
+certain actions in the system. Like hook methods, they can be defined on app
+level or controller level. Unlike hooks, there are no notifications fired for
+them.
 
 =head4 render_error
 
-The C<render_error> hook is called to render error pages:
+	async sub render_error($self, $ctx, $code, $message = undef) { ... }
+	async sub render_error($self, $controller, $ctx, $code, $message = undef) { ... }
 
-	async sub render_error ($self, $ctx, $code, $message = undef)
-	{
-		my $text = $message // HTTP::Status::status_message($code);
-		await $ctx->res->status($code)->html(
-			"<h1>Error $code</h1><p>$text</p>"
-		);
-	}
-
-This hook receives the controller instance, the context, the HTTP status code,
-and an optional error message. If no message is provided and the application is
-in production mode, a generic status message is used instead. The default
-implementation sends a plain text response. The default implementation checks
-C<is_production> method of the application to avoid rendering the original
-error message which may contain sensitive information.
-
-Both hooks prioritize controller-specific implementations over application-level
-ones. If a controller defines its own C<on_error> or C<render_error>, those
-will be called instead of the application's versions. This allows fine-grained
-control over error handling for different parts of the application.
+This handler's default implementation sends a plain text response with code
+C<500>. The default implementation checks C<is_production> method of the
+application to avoid rendering the original error message which may contain
+sensitive information. It also acknowledges the existence of L<Gears::X::HTTP>,
+which may change the error code to something else.
 

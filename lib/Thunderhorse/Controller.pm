@@ -52,8 +52,18 @@ sub render_error ($self, $ctx, $code, $message = undef)
 	$self->app->render_error($self, $ctx, $code, $message);
 }
 
+#####################
+### HOOKS SECTION ###
+#####################
+
+sub _on_error ($self, @args)
+{
+	$self->app->_fire_hooks(error => $self, @args);
+	return $self->on_error(@args);
+}
+
 sub on_error ($self, $ctx, $error)
 {
-	$self->app->on_error($self, $ctx, $error);
+	return $self->app->on_error($self, $ctx, $error);
 }
 

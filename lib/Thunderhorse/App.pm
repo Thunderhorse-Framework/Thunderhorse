@@ -70,10 +70,25 @@ has field 'extra_methods' => (
 	},
 );
 
-has field 'extra_wrappers' => (
+has field 'extra_middleware' => (
 	isa => ArrayRef,
 	default => sub { [] },
 );
+
+has field 'extra_hooks' => (
+	isa => HashRef,
+	default => sub {
+		{
+			startup => [],
+			shutdown => [],
+			error => [],
+		}
+	},
+);
+
+#############################
+### BOOTSTRAPPING SECTION ###
+#############################
 
 sub BUILD ($self, $)
 {
@@ -152,7 +167,6 @@ sub load_module ($self, $module_class, $args = {})
 	my $module = load_component(get_component_name($module_class, 'Thunderhorse::Module'))
 		->new(app => $self, config => $args);
 
-	# Merge module's registered methods into app's collection
 	foreach my $area (keys $module->methods->%*) {
 		$self->extra_methods->{$area}->%* = (
 			$self->extra_methods->{$area}->%*,
@@ -160,14 +174,25 @@ sub load_module ($self, $module_class, $args = {})
 		);
 	}
 
-	$self->extra_wrappers->@* = (
-		$self->extra_wrappers->@*,
-		$module->wrappers->@*,
+	foreach my $hook (keys $module->hooks->%*) {
+		$self->extra_hooks->{$hook}->@* = (
+			$self->extra_hooks->{$hook}->@*,
+			$module->hooks->{$hook}->@*,
+		);
+	}
+
+	$self->extra_middleware->@* = (
+		$self->extra_middleware->@*,
+		$module->middleware->@*,
 	);
 
 	push $self->modules->@*, $module;
 	return $self;
 }
+
+###################################
+### PAGI IMPLEMENTATION SECTION ###
+###################################
 
 async sub pagi ($self, $scope, $receive, $send)
 {
@@ -175,8 +200,8 @@ async sub pagi ($self, $scope, $receive, $send)
 
 	return await handle_lifespan(
 		$scope, $receive, $send,
-		startup => sub { $self->on_startup(@_) },
-		shutdown => sub { $self->on_shutdown(@_) },
+		startup => sub { $self->_on_startup(@_) },
+		shutdown => sub { $self->_on_shutdown(@_) },
 	) if $scope_type eq 'lifespan';
 
 	die 'Unsupported scope type'
@@ -226,7 +251,7 @@ sub run ($self)
 		return $self->pagi(@args);
 	};
 
-	foreach my $mw ($self->extra_wrappers->@*) {
+	foreach my $mw ($self->extra_middleware->@*) {
 		if (ref $mw eq 'CODE') {
 			$pagi = $mw->($pagi);
 		}
@@ -241,23 +266,52 @@ sub run ($self)
 	return $pagi;
 }
 
+async sub render_error ($self, $controller, $ctx, $code, $message = undef)
+{
+	$message = defined $message && !$self->is_production ? $message : status_message($code);
+	await $ctx->res->status($code)->text($message);
+}
+
+#####################
+### HOOKS SECTION ###
+#####################
+
+sub hook ($self, $hook, $handler)
+{
+	push $self->extra_hooks->{$hook}->@*, $handler;
+	return $self;
+}
+
+sub _fire_hooks ($self, $hook, @args)
+{
+	foreach my $handler ($self->extra_hooks->{$hook}->@*) {
+		$handler->(@args);
+	}
+}
+
+sub _on_startup ($self, @args)
+{
+	$self->_fire_hooks(startup => @args);
+	return $self->on_startup(@args);
+}
+
 async sub on_startup ($self, $state)
 {
+}
+
+sub _on_shutdown ($self, @args)
+{
+	$self->_fire_hooks(shutdown => @args);
+	return $self->on_shutdown(@args);
 }
 
 async sub on_shutdown ($self, $state)
 {
 }
 
-async sub render_error ($self, $controller, $ctx, $code, $message = undef)
-{
-	$message = defined $message && $self->is_production ? $message : status_message($code);
-	await $ctx->res->status($code)->text($message);
-}
-
 async sub on_error ($self, $controller, $ctx, $error)
 {
-	die $error unless $error isa 'Gears::X::HTTP';
-	await +($controller // $self->controller)->render_error($ctx, $error->code);
+	my $code = $error isa 'Gears::X::HTTP' ? $error->code : 500;
+	await +($controller // $self->controller)->render_error($ctx, $code, $error);
 }
 

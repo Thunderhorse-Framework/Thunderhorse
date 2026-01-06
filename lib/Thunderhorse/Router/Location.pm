@@ -130,7 +130,7 @@ sub _build_pagi_app ($self)
 					}
 				}
 				catch ($ex) {
-					await $controller->on_error($ctx, $ex);
+					await $controller->_on_error($ctx, $ex);
 				}
 			}
 

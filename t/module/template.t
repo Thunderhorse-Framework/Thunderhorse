@@ -103,13 +103,8 @@ subtest 'should render DATA template' => sub {
 };
 
 subtest 'should not render bad template' => sub {
-	my $err = dies {
-		http $app, GET '/test-bad';
-		diag http->text;
-	};
-
-	note $err;
-	isa_ok $err, ['Gears::X'], 'bad template ok';
+	http $app, GET '/test-bad';
+	like http->text, qr{\Q[Template] file error - bad_template.tt: not found\E}, 'text ok';
 };
 
 done_testing;

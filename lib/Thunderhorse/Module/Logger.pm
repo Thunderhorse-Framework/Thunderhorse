@@ -34,17 +34,9 @@ sub build ($self)
 		}
 	);
 
-	$self->wrap(
-		sub ($app) {
-			return async sub (@args) {
-				try {
-					await $app->(@args);
-				}
-				catch ($ex) {
-					$logger->message(error => "$ex");
-					die $ex;
-				}
-			};
+	$self->hook(
+		error => sub ($controller, $ctx, $error) {
+			$logger->message(error => $error);
 		}
 	);
 }

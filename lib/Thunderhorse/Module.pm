@@ -18,9 +18,20 @@ has field 'methods' => (
 	},
 );
 
-has field 'wrappers' => (
+has field 'middleware' => (
 	isa => ArrayRef,
 	default => sub { [] },
+);
+
+has field 'hooks' => (
+	isa => HashRef,
+	default => sub {
+		{
+			startup => [],
+			shutdown => [],
+			error => [],
+		}
+	},
 );
 
 # register new methods for various areas
@@ -34,10 +45,18 @@ sub register ($self, $for, $name, $code)
 		if exists $area->{$name};
 
 	$area->{$name} = $code;
+	return $self;
 }
 
 sub wrap ($self, $mw)
 {
-	push $self->wrappers->@*, $mw;
+	push $self->middleware->@*, $mw;
+	return $self;
+}
+
+sub hook ($self, $hook, $handler)
+{
+	push $self->hooks->{$hook}->@*, $handler;
+	return $self;
 }
 
