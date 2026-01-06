@@ -4,9 +4,7 @@ use v5.40;
 use Mooish::Base -standard;
 
 use Gears::X::Thunderhorse;
-
-use Future::AsyncAwait;
-use HTTP::Status qw(status_message);
+use Thunderhorse qw(build_handler adapt_pagi);
 
 extends 'Gears::Router::Location::SigilMatch';
 
@@ -83,65 +81,10 @@ sub _build_name ($self)
 
 sub _build_pagi_app ($self)
 {
-	weaken $self;
-	my $dest = $self->get_destination;
-	my $controller = $self->controller;
-	my $pagi;
-
-	if ($self->pagi) {
-		# TODO: adjust PAGI (like Kelp did to PSGI)
-		$pagi = async sub ($scope, @args) {
-			Gears::X::Thunderhorse->raise('bad PAGI execution chain, not a Thunderhorse app')
-				unless exists $scope->{thunderhorse};
-
-			my $result = await $dest->($scope, @args);
-			$scope->{thunderhorse}->consume;
-
-			return $result;
-		}
-	}
-	else {
-		$pagi = async sub ($scope, $receive, $send) {
-			Gears::X::Thunderhorse->raise('bad PAGI execution chain, not a Thunderhorse app')
-				unless exists $scope->{thunderhorse};
-
-			my $ctx = $scope->{thunderhorse};
-			$ctx->set_pagi([$scope, $receive, $send]);
-
-			my $match = $ctx->match;
-			my $bridge = ref $match eq 'ARRAY';
-
-			if (defined $dest) {
-				try {
-					my $facade = $controller->make_facade($ctx);
-					my $result = $dest->($controller, $facade, ($bridge ? $match->[0] : $match)->matched->@*);
-					$result = await $result
-						if $result isa 'Future';
-
-					if (!$ctx->is_consumed) {
-						if (defined $result) {
-							await $ctx->res->status_try(200)->content_type_try('text/html')->send($result);
-						}
-						else {
-							weaken $facade;
-							Gears::X::Thunderhorse->raise("context hasn't been given up - forgot await?")
-								if defined $facade;
-						}
-					}
-				}
-				catch ($ex) {
-					await $controller->_on_error($ctx, $ex);
-				}
-			}
-
-			# if this is a bridge and bridge did not render, it means we are
-			# free to go deeper. Avoid first match, as it was handled already
-			# above
-			if ($bridge && !$ctx->is_consumed) {
-				await $controller->app->pagi_loop($ctx, $match->@[1 .. $match->$#*]);
-			}
-		};
-	}
+	my $pagi = $self->pagi
+		? adapt_pagi($self->get_destination)
+		: build_handler($self->controller, $self->get_destination)
+		;
 
 	if (my $mw = $self->pagi_middleware) {
 		$pagi = $mw->($pagi);

@@ -3,6 +3,7 @@ package Thunderhorse::App;
 use v5.40;
 use Mooish::Base -standard;
 
+use Thunderhorse qw(pagi_loop);
 use Thunderhorse::Config;
 use Gears qw(load_component get_component_name);
 use Thunderhorse::Context;
@@ -217,32 +218,13 @@ async sub pagi ($self, $scope, $receive, $send)
 	my $action = lc join '.', grep { defined } ($scope_type, $req->method);
 	my $matches = $router->match($req->path, $action);
 
-	await $self->pagi_loop($ctx, $matches->@*);
+	await pagi_loop($ctx, $matches->@*);
 
 	if (!$ctx->is_consumed) {
 		await $self->render_error(undef, $ctx, 404);
 	}
 
 	return;
-}
-
-async sub pagi_loop ($self, $ctx, @matches)
-{
-	my @pagi = $ctx->pagi->@*;
-
-	foreach my $match (@matches) {
-		# is this a bridge? If yes, take first element (the bridge location).
-		# It is guaranteed to be a match, not an array
-		my $loc = (ref $match eq 'ARRAY' ? $match->[0] : $match)->location;
-
-		# $ctx->match may be an array if this is a bridge. Location handler
-		# takes care of that
-		$ctx->set_match($match);
-
-		# execute location handler (PAGI application)
-		await $loc->pagi_app->(@pagi);
-		last if $ctx->is_consumed;
-	}
 }
 
 sub run ($self)
