@@ -793,7 +793,7 @@ initialization, before the C<build> method is called.
 
 Thunderhorse is very hackable due to the system being based on events and
 callbacks. Events are handled by hooks, while callbacks are executed using
-handlers.
+various overridable methods.
 
 =head3 Hooks
 
@@ -897,9 +897,9 @@ processing.
 This hook should consume the context by sending a response. The default handler
 calls L</render_error> method a text page with an error message.
 
-=head3 Handlers
+=head3 Overriding system methods
 
-Handlers are methods similar to hook methods. They are required to perform
+Overridable methods are similar to hook methods. They are required to perform
 certain actions in the system. Like hook methods, they can be defined on app
 level or controller level. Unlike hooks, there are no notifications fired for
 them.
@@ -909,7 +909,7 @@ them.
 	async sub render_error($self, $ctx, $code, $message = undef) { ... }
 	async sub render_error($self, $controller, $ctx, $code, $message = undef) { ... }
 
-This handler's default implementation sends a plain text response with code
+This method's default implementation sends a plain text response with code
 C<500>. The default implementation checks C<is_production> method of the
 application to avoid rendering the original error message which may contain
 sensitive information. It also acknowledges the existence of L<Gears::X::HTTP>,
