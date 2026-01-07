@@ -81,6 +81,14 @@ sub _build_name ($self)
 
 sub _build_pagi_app ($self)
 {
+	# TODO: add router sealing when the app is started (prevent it from
+	# changing and breaking assumptions)
+
+	# this needs to be checked lazily, because we don't know if this is a
+	# bridge in BUILD
+	Gears::X::Thunderhorse->raise('PAGI apps cannot be bridges')
+		if $self->pagi && $self->is_bridge;
+
 	my $pagi = $self->pagi
 		? adapt_pagi($self->get_destination)
 		: build_handler($self->controller, $self->get_destination)

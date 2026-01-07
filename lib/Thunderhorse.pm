@@ -48,15 +48,26 @@ async sub pagi_loop ($ctx, @matches)
 
 sub adapt_pagi ($destination)
 {
-	# TODO: adjust PAGI (like Kelp did to PSGI)
 	return async sub ($scope, @args) {
 		Gears::X::Thunderhorse->raise('bad PAGI execution chain, not a Thunderhorse app')
-			unless exists $scope->{thunderhorse};
+			unless my $ctx = $scope->{thunderhorse};
 
-		my $result = await $destination->($scope, @args);
-		$scope->{thunderhorse}->consume;
+		# consume this context eagerly to keep further matches from firing
+		$ctx->consume;
 
-		return $result;
+		# take last matched element as the path
+		# pagi apps can't be bridges, so don't check if $ctx->match is an array
+		my $path = $ctx->match->matched->[-1] // '';
+		my $trailing_slash = $scope->{path} =~ m{/$} ? '/' : '';
+		$path =~ s{^/?}{/};
+		$path =~ s{/?$}{$trailing_slash};
+
+		# modify the scope for the app
+		$scope = {$scope->%*};
+		$scope->{root_path} = ($scope->{root_path} . $scope->{path}) =~ s{\Q$path\E$}{}r;
+		$scope->{path} = $path;
+
+		return await $destination->($scope, @args);
 	}
 }
 
@@ -64,9 +75,8 @@ sub build_handler ($controller, $destination)
 {
 	return async sub ($scope, $receive, $send) {
 		Gears::X::Thunderhorse->raise('bad PAGI execution chain, not a Thunderhorse app')
-			unless exists $scope->{thunderhorse};
+			unless my $ctx = $scope->{thunderhorse};
 
-		my $ctx = $scope->{thunderhorse};
 		$ctx->set_pagi([$scope, $receive, $send]);
 
 		my $match = $ctx->match;
