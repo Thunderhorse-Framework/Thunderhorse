@@ -44,6 +44,7 @@ sub url_for ($self, $name, @args)
 	Gears::X::Thunderhorse->raise("no such route '$name'")
 		unless defined $loc;
 
+	# TODO: url encode
 	return $loc->build(@args);
 }
 

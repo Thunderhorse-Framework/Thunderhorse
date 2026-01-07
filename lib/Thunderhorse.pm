@@ -48,7 +48,9 @@ async sub pagi_loop ($ctx, @matches)
 
 sub adapt_pagi ($destination)
 {
-	return async sub ($scope, @args) {
+	# no need to async here because we don't await - destination must return a promise anyway
+	# TODO: think of a proper way to enforce last placeholder being at the very end of the url
+	return sub ($scope, @args) {
 		Gears::X::Thunderhorse->raise('bad PAGI execution chain, not a Thunderhorse app')
 			unless my $ctx = $scope->{thunderhorse};
 
@@ -67,7 +69,7 @@ sub adapt_pagi ($destination)
 		$scope->{root_path} = ($scope->{root_path} . $scope->{path}) =~ s{\Q$path\E$}{}r;
 		$scope->{path} = $path;
 
-		return await $destination->($scope, @args);
+		return $destination->($scope, @args);
 	}
 }
 
@@ -82,6 +84,9 @@ sub build_handler ($controller, $destination)
 		my $match = $ctx->match;
 		my $bridge = ref $match eq 'ARRAY';
 
+		# this location may be unimplemented when destination is undefined, but
+		# a full handler should be built anyway. Unimplemented destinations
+		# should still be wrappable in middleware.
 		if (defined $destination) {
 			try {
 				my $facade = $controller->make_facade($ctx);

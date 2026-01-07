@@ -174,6 +174,8 @@ exact same result:
 		return 'Hello?';
 	}
 
+=head3 Destinations
+
 Destination can be a C<sub> or C<async sub> (using L<Future::AsyncAwait>). It
 accepts two base arguments: C<$self> which is the instance of the controller
 (L<Thunderhorse::Controller>), and C<$ctx> which is current request's context
@@ -211,6 +213,11 @@ This time, the return value of the destination is not ignored, since only
 setting response metadata does not cause the context to be consumed. Status and
 I<Content-Type> header will not be overridden, so the response will be sent as
 plaintext. In this case, there is no need to await anything.
+
+While not very common, a destination can be unimplemented when C<to> is
+skipped. Unimplemented locations will be "stepped over" during request
+handling. This may be useful in combination with bridges or PAGI middlewares,
+explained later.
 
 =head3 Placeholders
 
@@ -386,6 +393,39 @@ allowing different handlers for different request types:
 	$router->add('/api/data' => { to => 'get_data', action => 'http.get' });
 	$router->add('/api/data' => { to => 'post_data', action => 'http.post' });
 	$router->add('/api/data' => { to => 'stream_data', action => 'websocket' });
+
+=head3 PAGI compatibility
+
+Thunderhorse was coded in such a way that allows it to fully integrate the PAGI
+ecosystem. Instead of a destination described in L</Destinations>, a
+PAGI application can be specified, together with C<< pagi => true >> argument:
+
+	$router->add('/pagi-app' => { to => $pagi_app, pagi => true });
+	$router->add('/pagi-app/>path' => { to => $pagi_app, pagi => true });
+
+C<$pagi_app> must be a PAGI-native async sub. In the first instance, we mount
+the application under C</pagi-app>, but C</pagi-app/something> will not be
+routed through it. In the second instance, we use slurpy placeholder to route
+both C</pagi-app> and all routes underneath it to that application.
+
+In addition to native support for PAGI applications, any location can be
+wrapped in extra PAGI middleware (including those handled Thunderhorse-native
+destinations described in L</Destinations>):
+
+	$router->add('/with-middleware' => {
+		to => sub { ... },
+		pagi_middleware => sub ($app) {
+			builder {
+				enable 'Some::Middleware';
+				$app;
+			};
+		};
+	});
+
+The above example uses L<PAGI::Middleware::Builder> to wrap the C<$app> object
+in the middlewares, but any valid method of doing that can be used. PAGI
+middlewares are always run just before the destination handler is fired, as one
+would expect.
 
 =head2 Controllers
 
