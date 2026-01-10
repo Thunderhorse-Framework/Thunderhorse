@@ -173,6 +173,18 @@ well-organized system. It is also based on perl 5.40 and uses modern syntax
 features in its core, which allows it to further reduce the set of required
 dependencies and keep the core small.
 
+=head2 Stability notice
+
+B<Thunderhorse is currently in a beta phase> and will stabilize on version
+C<1.000>. Until then, no stability promises are made and everything is up for
+changing.
+
+Starting with version C<1.000>, all documented interface will only be a subject
+to breaking backward compatibility after a B<two year deprecation period>,
+starting when the deprecation is announced in L<Thunderhorse::Compatibility>.
+The only exception to that rule is when breaking compatibility is required to
+fix a severe security issue.
+
 =head2 Thunderhorse and PAGI
 
 Thunderhorse is a layer built around L<PAGI> spec, so it requires at least some
