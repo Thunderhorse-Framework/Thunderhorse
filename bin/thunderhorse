@@ -8,18 +8,31 @@ use Pod::Usage;
 use Path::Tiny qw(path);
 use List::Util qw(first);
 use File::Spec;
+use Data::Dumper;
 
 use constant EX_DIR => path(__FILE__)->parent->parent->child('ex');
+
+# try loading app from '.' and 'lib' directories. Dot is required for "do
+# 'app.pl'" to work.
+use lib '.', 'lib';
 
 # autoflush stdout
 $|++;
 
+# prettier Data::Dumper output
+$Data::Dumper::Sortkeys = true;
+$Data::Dumper::Indent = 1;
+
 my $generate;
+my $config = false;
+my $locations = false;
 my $tabs = false;
 my $help = false;
 
 GetOptions(
 	'g|generate=s' => \$generate,
+	'c|show-config' => \$config,
+	'l|show-locations' => \$locations,
 	't|tabs' => \$tabs,
 	'h|help' => \$help,
 ) or $help = true;
@@ -62,9 +75,26 @@ elsif (defined $generate) {
 	say 'done.';
 }
 
+elsif ($config) {
+	my $app = load_app($target);
+	print Dumper($app->config->config);
+}
+
+elsif ($locations) {
+	my $app = load_app($target);
+	print Dumper(get_readable_locations($app));
+}
+
 else {
 	warn "No action specified\n";
 	pod2usage(1);
+}
+
+sub load_app ($target)
+{
+	local $ENV{THUNDERHORSE_SCRIPT} = true;
+	local $0 = $target;
+	return do $target;
 }
 
 sub get_template_namespace ($generator, $template)
@@ -84,6 +114,33 @@ sub get_template_namespace ($generator, $template)
 	return undef;
 }
 
+sub _recurse_locations ($level)
+{
+	my @out;
+	foreach my $loc (sort { $a->order <=> $b->order } $level->@*) {
+		my $this_location = {
+			name => $loc->name,
+			controller => ref $loc->controller,
+			handler => $loc->to,
+			action => $loc->action,
+		};
+
+		if ($loc->is_bridge) {
+			push @out, [$this_location, _recurse_locations($loc->locations)];
+		}
+		else {
+			push @out, $this_location;
+		}
+	}
+
+	return @out;
+}
+
+sub get_readable_locations ($app)
+{
+	return [_recurse_locations $app->router->locations];
+}
+
 __END__
 
 =head1 NAME
@@ -100,8 +157,7 @@ thunderhorse - manage Thunderhorse projects
 
 =item -g EXAMPLE, --generate=EXAMPLE
 
-Copies one of the Thunderhorse examples into C<TARGET> (which is a Perl
-namespace). Example:
+Copies one of the Thunderhorse examples into C<TARGET>.
 
 	thunderhorse -g full-app My::App
 
@@ -109,6 +165,19 @@ namespace). Example:
 
 When paired with C<--generate>, causes the generated application to use tabs
 for indenting instead of spaces.
+
+=item -c, --show-conig
+
+Dumps app configuration. By default, shows production configuration. Modify
+C<PAGI_ENV> environmental variable to change that.
+
+	thunderhorse -c app.pl
+
+=item -l, --show-locations
+
+Dumps installed app locations.
+
+	thunderhorse -l app.pl
 
 =item -h, --help
 
@@ -121,4 +190,6 @@ Shows this help message.
 This program manages Thunderhorse projects. Must be used in a directory which
 contains (or will contain) a Thunderhorse application. Currently, it only
 supports generating new project directory structures based on examples.
+
+The meaning of C<TARGET> depends on the used flags.
 

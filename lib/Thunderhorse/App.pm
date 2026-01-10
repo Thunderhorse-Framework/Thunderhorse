@@ -229,6 +229,9 @@ async sub pagi ($self, $scope, $receive, $send)
 
 sub run ($self)
 {
+	# do not turn into PAGI application if run by a thunderhorse script
+	return $self if $ENV{THUNDERHORSE_SCRIPT};
+
 	my $pagi = sub (@args) {
 		return $self->pagi(@args);
 	};
