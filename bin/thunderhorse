@@ -28,6 +28,7 @@ my $config = false;
 my $locations = false;
 my $tabs = false;
 my $help = false;
+my $error = false;
 
 GetOptions(
 	'g|generate=s' => \$generate,
@@ -35,15 +36,15 @@ GetOptions(
 	'l|show-locations' => \$locations,
 	't|tabs' => \$tabs,
 	'h|help' => \$help,
-) or $help = true;
+) or $error = true;
 
 my $target = shift
 	or $help
-	or do { warn "no target specified\n"; $help = true };
+	or do { warn "no target specified\n"; $error = true };
 
 # handle actions
-if ($help) {
-	pod2usage(1);
+if ($help || $error) {
+	pod2usage($error ? 1 : 0);
 }
 
 elsif (defined $generate) {
@@ -77,12 +78,12 @@ elsif (defined $generate) {
 
 elsif ($config) {
 	my $app = load_app($target);
-	print Dumper($app->config->config);
+	print Data::Dumper->Dump([$app->config->config], ['*config']);
 }
 
 elsif ($locations) {
 	my $app = load_app($target);
-	print Dumper(get_readable_locations($app));
+	print Data::Dumper->Dump([get_readable_locations($app)], ['*locations']);
 }
 
 else {
