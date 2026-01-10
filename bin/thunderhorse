@@ -120,6 +120,7 @@ sub _recurse_locations ($level)
 	my @out;
 	foreach my $loc (sort { $a->order <=> $b->order } $level->@*) {
 		my $this_location = {
+			pattern => $loc->pattern,
 			name => $loc->name,
 			controller => ref $loc->controller,
 			handler => $loc->to,

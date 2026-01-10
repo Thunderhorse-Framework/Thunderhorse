@@ -92,6 +92,7 @@ subtest 'should dump routes' => sub {
 	is $exit, 0, 'exit code ok';
 	my $output = $out . $err;
 	like $output, qr{^\@locations\s*=}, 'dumper output present';
+	like $output, qr{'pattern'}, 'pattern info present';
 	like $output, qr{'name'}, 'location structure present';
 	like $output, qr{'controller'}, 'controller info present';
 
