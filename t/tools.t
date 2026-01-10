@@ -19,7 +19,7 @@ package ToolsApp {
 		my $r = $self->router;
 
 		$r->add(
-			'/somewhere/?opt/:arg' => {
+			'/somewhere/?opt/*arg' => {
 				name => 't1',
 				defaults => {
 					opt => 5,
@@ -43,6 +43,7 @@ my $c = $app->controller;
 subtest 'url_for should work' => sub {
 	is $c->url_for('t1', arg => 'hi'), '/somewhere/5/hi', 'default arg ok';
 	is $c->url_for('t1', opt => 0, arg => 'ho'), '/somewhere/0/ho', 'passed arg ok';
+	is $c->url_for('t1', opt => '1/2', arg => '3/4'), '/somewhere/1%2F2/3/4', 'html-encoding ok';
 
 	ok dies { $c->url_for('t1') }, 'location but no required arg ok';
 	ok dies { $c->url_for('bad') }, 'unknown location ok';
