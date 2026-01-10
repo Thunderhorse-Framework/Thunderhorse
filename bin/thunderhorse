@@ -11,6 +11,9 @@ use File::Spec;
 
 use constant EX_DIR => path(__FILE__)->parent->parent->child('ex');
 
+# autoflush stdout
+$|++;
+
 my $generate;
 my $tabs = false;
 my $help = false;
@@ -25,16 +28,14 @@ my $target = shift
 	or $help
 	or do { warn "no target specified\n"; $help = true };
 
-# check one of the actions
-defined $generate
-	or $help
-	or do { warn "no action specified\n"; $help = true };
-
-pod2usage(1)
-	if $help;
-
 # handle actions
-if (defined $generate) {
+if ($help) {
+	pod2usage(1);
+}
+
+elsif (defined $generate) {
+	print "Generating project from template $generate... ";
+
 	my $generator = Gears::Generator->new(base_dir => EX_DIR);
 	my $namespace = get_template_namespace($generator, $generate);
 
@@ -43,7 +44,7 @@ if (defined $generate) {
 		my $target_file = File::Spec->join(split /::/, $target);
 
 		push $generator->name_filters->@*, sub ($name) {
-			return $name =~ s{\Q$file\E}{$target_file}r;
+			return $name =~ s{\b\Q$file\E}{$target_file}r;
 		};
 
 		push $generator->content_filters->@*, sub ($content) {
@@ -51,8 +52,19 @@ if (defined $generate) {
 		};
 	}
 
+	if (!$tabs) {
+		push $generator->content_filters->@*, sub ($content) {
+			return $content =~ s{\t}{    }rg;
+		};
+	}
+
 	$generator->generate($generate, '.');
 	say 'done.';
+}
+
+else {
+	warn "No action specified\n";
+	pod2usage(1);
 }
 
 sub get_template_namespace ($generator, $template)
