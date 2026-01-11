@@ -304,3 +304,199 @@ async sub on_error ($self, $controller, $ctx, $error)
 	await +($controller // $self->controller)->render_error($ctx, $code, $error);
 }
 
+__END__
+
+=head1 NAME
+
+Thunderhorse::App - Base application class for Thunderhorse
+
+=head1 SYNOPSIS
+
+	use v5.40;
+
+	package MyApp;
+	use Mooish::Base;
+
+	extends 'Thunderhorse::App';
+
+	sub build ($self)
+	{
+		$self->router->add('/hello' => { to => 'greet' });
+	}
+
+	sub greet ($self, $ctx)
+	{
+		return "Hello, World!";
+	}
+
+	MyApp->new->run;
+
+=head1 DESCRIPTION
+
+Thunderhorse::App is the base application class for Thunderhorse
+applications. It extends L<Gears::App> and provides all core functionality
+needed to build PAGI web applications, including routing, configuration
+management, controller loading, and request handling.
+
+Every Thunderhorse application must be a subclass of this class.
+
+=head1 INTERFACE
+
+Inherits all interface from L<Gears::App>, and adds the interface documented below.
+
+=head2 Attributes
+
+=head3 path
+
+Application's base path. Defaults to the path to application starter script,
+like C<app.pl>.
+
+I<Available in the constructor>
+
+=head3 env
+
+Application environment. Can be C<production>, C<development>, or C<test>.
+Defaults to C<PAGI_ENV> environmental variable, or C<production>.
+
+I<Available in the constructor>
+
+=head3 initial_config
+
+Initial configuration, either a hash reference or a string path to
+configuration directory. Defaults to an empty hash.
+
+The configuration directory path will be appended to L</path> before reading
+the configuration.
+
+I<Available in the constructor>
+
+=head3 loop
+
+L<IO::Async::Loop> instance for quick access.
+
+I<Not available in constructor>
+
+=head3 controller
+
+Base application controller instance.
+
+I<Not available in constructor>
+
+=head2 Methods
+
+=head3 new
+
+	$object = $class->new(%args)
+
+Standard Mooish constructor. Consult L</Attributes> section for available
+constructor arguments.
+
+=head3 build
+
+	sub build ($self) { ... }
+
+Override this method to define routes and configure the application. Called
+automatically during object construction.
+
+=head3 configure
+
+	$self->configure()
+
+Loads configuration files and modules. Called automatically during
+construction. Should not be called by hand, but can be overridden if some tasks
+need configuring before L</build>.
+
+=head3 run
+
+	$pagi_app = $app->run()
+
+Returns a PAGI application coderef ready for C<pagi-server>. If called from a
+L<thunderhorse> script (C<THUNDERHORSE_SCRIPT> environmental value is set),
+returns the app object instead.
+
+=head3 pagi
+
+	$self->pagi($scope, $receive, $send)
+
+Main PAGI application handler. This method is used in L</run>, so there is no
+need to call it manually.
+
+=head3 load_module
+
+	$self = $self->load_module($name, $config = {})
+
+Loads and initializes a Thunderhorse module. Module name is automatically
+prefixed with C<Thunderhorse::Module::> unless it starts with C<^>.
+
+=head3 load_controller
+
+	$self = $self->load_controller($name)
+
+Loads a controller class and registers its routes. Controller name is
+automatically prefixed with application namespace unless it starts with C<^>.
+
+=head3 add_method
+
+	$self = $self->add_method($for, $name, $code)
+
+Adds a method with a C<$name> dynamically. C<$for> specifies the target area.
+Used by modules to extend functionality.
+
+Allowed values for C<$for> are: C<controller>
+
+=head3 add_middleware
+
+	$self = $self->add_middleware($middleware)
+
+Wraps the entire application in PAGI middleware. C<$middleware> can be a
+coderef or a L<PAGI::Middleware> instance.
+
+=head3 add_hook
+
+	$self = $self->add_hook($hook, $handler)
+
+Registers a hook handler for application events.
+
+Allowed values for C<$hook> are: C<startup>, C<shutdown>, C<error>.
+
+=head3 is_production
+
+	$bool = $self->is_production()
+
+Returns true if the application is running in production environment.
+
+=head3 render_error
+
+	$self->render_error($controller, $ctx, $code, $message = undef)
+
+Renders an error response with the given HTTP status code. Can be overridden to
+customize error pages.
+
+=head3 on_startup
+
+	async sub on_startup ($self, $state) { ... }
+
+Lifespan hook called when the worker process starts. Can be overridden to
+perform initialization tasks. C<$state> is a PAGI persistent hash reference
+with state values.
+
+=head3 on_shutdown
+
+	async sub on_shutdown ($self, $state) { ... }
+
+Lifespan hook called when the worker process shuts down. Can be overridden to
+perform cleanup tasks. C<$state> is a PAGI persistent hash reference with state
+values.
+
+=head3 on_error
+
+	async sub on_error ($self, $controller, $ctx, $error) { ... }
+
+Error hook called when an exception occurs during request processing. Can be
+overridden to customize error handling. Overriding it on application level will
+change the default handler for all controllers.
+
+=head1 SEE ALSO
+
+L<Thunderhorse>, L<Gears::App>, L<Thunderhorse::Controller>
+
