@@ -1155,11 +1155,13 @@ which may change the error code to something else.
 
 =head2 Getting help
 
-Use L<issues|https://github.com/Thunderhorse-Framework/Thunderhorse/issues on
-GitHub> to report bugs or request enhancements.
+Use L<issues on
+GitHub|https://github.com/Thunderhorse-Framework/Thunderhorse/issues> to report
+bugs or request enhancements.
 
-Use L<discussions|https://github.com/orgs/Thunderhorse-Framework/discussions on
-GitHub> to ask questions or discuss Thunderhorse.
+Use L<discussions on
+GitHub|https://github.com/orgs/Thunderhorse-Framework/discussions> to ask
+questions or discuss Thunderhorse.
 
 For private inquiries, use the author's mail listed in L</Author>.
 
