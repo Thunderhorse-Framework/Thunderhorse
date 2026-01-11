@@ -183,7 +183,8 @@ Starting with version C<1.000>, all documented interface will only be a subject
 to breaking backward compatibility after a B<two year deprecation period>,
 starting when the deprecation is announced in L<Thunderhorse::Compatibility>.
 The only exception to that rule is when breaking compatibility is required to
-fix a severe security issue.
+fix a severe security issue. Note that this policy does not apply to changes in
+L<PAGI> itself.
 
 =head2 Thunderhorse and PAGI
 
