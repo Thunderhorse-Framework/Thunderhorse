@@ -19,6 +19,8 @@ sub _run_method ($self, $method, @args)
 
 sub _can_method ($self, $method)
 {
+	# this returns app's can on purpose, to achieve app method being run by
+	# controller object.
 	return $self->app->can($method)
 		// $self->SUPER::_can_method($method);
 }
