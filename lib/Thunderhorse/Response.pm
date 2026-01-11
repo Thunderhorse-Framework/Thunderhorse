@@ -76,7 +76,7 @@ constructor arguments.
 
 Updates the internal PAGI scope and sender from the context's PAGI tuple.
 Called automatically when the context's PAGI tuple changes via
-L<Thunderhorse::Context/set_pagi>.
+setter of L<Thunderhorse::Context/pagi>.
 
 =head1 SEE ALSO
 
