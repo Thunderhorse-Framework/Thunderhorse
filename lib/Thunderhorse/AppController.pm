@@ -19,8 +19,11 @@ sub _run_method ($self, $method, @args)
 
 sub _can_method ($self, $method)
 {
-	return $self->app->can($method)
-		// $self->SUPER::_can_method($method);
+	if (my $can = $self->app->can($method)) {
+		return sub { shift->app->$can(@_) };
+	}
+
+	return $self->SUPER::_can_method($method);
 }
 
 __END__

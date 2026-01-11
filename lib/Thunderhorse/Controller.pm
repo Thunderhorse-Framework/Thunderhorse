@@ -45,7 +45,7 @@ sub _run_method ($self, $method, @args)
 
 sub _can_method ($self, $method)
 {
-	return exists $self->app->extra_methods->{controller}{$method};
+	return $self->app->extra_methods->{controller}{$method};
 }
 
 sub url_for ($self, $name, @args)

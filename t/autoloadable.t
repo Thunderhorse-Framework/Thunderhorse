@@ -13,6 +13,11 @@ package TestApp {
 	{
 		return "one $arg " . ref $self;
 	}
+
+	sub testclass ($self)
+	{
+		return ref $self;
+	}
 }
 
 package TestAutoloader {
@@ -34,9 +39,14 @@ my $app = TestApp->new;
 my $c = TestAutoloader->new(app => $app);
 
 subtest '"can" from app controller should work' => sub {
-	can_ok $c, ['testone', 'run'], 'can on app methods ok';
+	can_ok $c, ['testone', 'testclass'], 'can on app methods ok';
 	can_ok $c, ['does', 'meta'], 'can on Moo methods ok';
 	can_ok $c, ['isa', 'DOES'], 'can on universal methods ok';
+};
+
+subtest '"can" from app controller should return correct sub' => sub {
+	my $method = $c->can('testclass');
+	is $c->$method, 'TestApp', 'can method ok';
 };
 
 subtest 'autoloading from app controller should work' => sub {
