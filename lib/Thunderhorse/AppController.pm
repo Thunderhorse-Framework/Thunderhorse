@@ -23,3 +23,37 @@ sub _can_method ($self, $method)
 		// $self->SUPER::_can_method($method);
 }
 
+__END__
+
+=head1 NAME
+
+Thunderhorse::AppController - Controller for no controller scenarios
+
+=head1 SYNOPSIS
+
+	package MyApp;
+
+	use v5.40;
+	use Mooish::Base;
+
+	extends 'Thunderhorse::App';
+
+	sub build ($self)
+	{
+		$self->router->add('/home' => {
+			to => sub ($self, $ctx) {
+				# $self is Thunderhorse::AppController
+			}
+		});
+	}
+
+=head1 DESCRIPTION
+
+This is a subclass of L<Thunderhorse::Controller>, used when you declare
+locations using router in the app class (not in a controller). It behaves the
+same as regular controller, but also autoloads methods from your app instance.
+
+While Thunderhorse can be used this way and completely skip declaring
+controllers, it is recommended to set up a controller structure and keep all
+routing in the controllers.
+
