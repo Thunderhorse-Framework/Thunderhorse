@@ -168,25 +168,6 @@ sub load_module ($self, $module_class, $args = {})
 	my $module = load_component(get_component_name($module_class, 'Thunderhorse::Module'))
 		->new(app => $self, config => $args);
 
-	foreach my $area (keys $module->methods->%*) {
-		$self->extra_methods->{$area}->%* = (
-			$self->extra_methods->{$area}->%*,
-			$module->methods->{$area}->%*,
-		);
-	}
-
-	foreach my $hook (keys $module->hooks->%*) {
-		$self->extra_hooks->{$hook}->@* = (
-			$self->extra_hooks->{$hook}->@*,
-			$module->hooks->{$hook}->@*,
-		);
-	}
-
-	$self->extra_middleware->@* = (
-		$self->extra_middleware->@*,
-		$module->middleware->@*,
-	);
-
 	push $self->modules->@*, $module;
 	return $self;
 }
@@ -257,15 +238,38 @@ async sub render_error ($self, $controller, $ctx, $code, $message = undef)
 	await $ctx->res->status($code)->text($message);
 }
 
-#####################
-### HOOKS SECTION ###
-#####################
+#########################
+### EXTENSION METHODS ###
+#########################
 
-sub hook ($self, $hook, $handler)
+sub add_method ($self, $for, $name, $code)
+{
+	my $area = $self->extra_methods->{$for};
+	Gears::X::Thunderhorse->raise("bad area '$for' for symbol '$name'")
+		unless defined $area;
+
+	Gears::X::Thunderhorse->raise("symbol '$name' already exists in area '$for'")
+		if exists $area->{$name};
+
+	$area->{$name} = $code;
+	return $self;
+}
+
+sub add_middleware ($self, $mw)
+{
+	push $self->extra_middleware->@*, $mw;
+	return $self;
+}
+
+sub add_hook ($self, $hook, $handler)
 {
 	push $self->extra_hooks->{$hook}->@*, $handler;
 	return $self;
 }
+
+#####################
+### HOOKS SECTION ###
+#####################
 
 sub _fire_hooks ($self, $hook, @args)
 {

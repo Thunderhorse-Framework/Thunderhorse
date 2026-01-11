@@ -27,14 +27,14 @@ sub build ($self)
 	weaken $self;
 	my $logger = $self->logger;
 
-	$self->register(
+	$self->add_method(
 		controller => log => sub ($controller, $level, @messages) {
 			$logger->message($level, @messages);
 			return $controller;
 		}
 	);
 
-	$self->hook(
+	$self->add_hook(
 		error => sub ($controller, $ctx, $error) {
 			$logger->message(error => $error);
 		}

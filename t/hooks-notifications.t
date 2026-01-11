@@ -21,19 +21,19 @@ package HooksApp {
 	{
 		weaken $self;
 
-		$self->hook(
+		$self->add_hook(
 			error => sub (@args) {
 				$self->events->{error} = [@args];
 			}
 		);
 
-		$self->hook(
+		$self->add_hook(
 			startup => sub (@args) {
 				$self->events->{startup} = [@args];
 			}
 		);
 
-		$self->hook(
+		$self->add_hook(
 			shutdown => sub (@args) {
 				$self->events->{shutdown} = [@args];
 			}

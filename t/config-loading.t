@@ -41,7 +41,7 @@ package LoadingTestModule {
 	{
 		weaken $self;
 
-		$self->register(
+		$self->add_method(
 			controller => module_method => sub ($controller) {
 				return 'module: ' . ($self->config->{test_option} // 'default');
 			}

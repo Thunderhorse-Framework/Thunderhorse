@@ -13,22 +13,16 @@ sub build ($self)
 	weaken $self;
 	my %wrap = $self->config->%*;
 
-	# NOTE: order must be reversed, because LIFO
+	# NOTE: order must be reversed, because of LIFO
 	my @keys = reverse sort { ($wrap{$a}{_order} // 0) <=> ($wrap{$b}{_order} // 0) or $a cmp $b }
 		keys %wrap;
 
-	$self->wrap(
-		sub ($app) {
-			foreach my $key (@keys) {
-				delete $wrap{$key}{_order};
+	foreach my $key (@keys) {
+		delete $wrap{$key}{_order};
 
-				my $class = load_component(get_component_name($key, 'PAGI::Middleware'));
-				my $mw = $class->new($wrap{$key}->%*);
-				$app = $mw->wrap($app);
-			}
-
-			return $app;
-		}
-	);
+		my $class = load_component(get_component_name($key, 'PAGI::Middleware'));
+		my $mw = $class->new($wrap{$key}->%*);
+		$self->add_middleware($mw);
+	}
 }
 

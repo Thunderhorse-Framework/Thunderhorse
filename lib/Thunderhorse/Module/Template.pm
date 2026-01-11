@@ -25,7 +25,7 @@ sub build ($self)
 	weaken $self;
 	my $tpl = $self->template;
 
-	$self->register(
+	$self->add_method(
 		controller => render => sub ($controller, $template, $vars = {}) {
 			return $tpl->process($template, $vars);
 		}
