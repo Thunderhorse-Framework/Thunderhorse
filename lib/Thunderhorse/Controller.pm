@@ -4,6 +4,7 @@ use v5.40;
 use Mooish::Base -standard;
 
 use Thunderhorse::Context::Facade;
+use URI;
 
 extends 'Gears::Controller';
 with 'Thunderhorse::Autoloadable';
@@ -45,6 +46,19 @@ sub url_for ($self, $name, @args)
 		unless defined $loc;
 
 	return $loc->build(@args);
+}
+
+sub abs_url ($self, $url = '')
+{
+	return URI->new_abs(
+		$url,
+		$self->app->config->get('app_url', 'http://localhost:5000'),
+	)->as_string;
+}
+
+sub abs_url_for ($self, $name, @args)
+{
+	return $self->abs_url($self->url_for($name, @args));
 }
 
 sub render_error ($self, $ctx, $code, $message = undef)

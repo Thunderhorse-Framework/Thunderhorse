@@ -14,4 +14,5 @@ requires 'Template::Toolkit' => 0;
 requires 'HTTP::Message' => 0;
 requires 'Devel::StrictMode' => 0;
 requires 'Path::Tiny' => 0;
+requires 'URI' => 0;
 

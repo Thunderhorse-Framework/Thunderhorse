@@ -49,6 +49,21 @@ subtest 'url_for should work' => sub {
 	ok dies { $c->url_for('bad') }, 'unknown location ok';
 };
 
+subtest 'abs_url should work' => sub {
+	is $c->abs_url, 'http://localhost:5000', 'abs_url with no arguments ok';
+	is $c->abs_url('/test'), 'http://localhost:5000/test', 'abs_url with an argument ok';
+
+	local $app->config->config->{app_url} = 'https://somewhere.world';
+	is $c->abs_url, 'https://somewhere.world', 'abs_url data source from app_url ok';
+};
+
+subtest 'abs_url_for should work' => sub {
+	is $c->abs_url_for('t1', arg => 'hi'), 'http://localhost:5000/somewhere/5/hi', 'abs_url_for works ok';
+	is $c->abs_url($c->url_for('t1', arg => 'hi')), $c->abs_url_for('t1', arg => 'hi'),
+		'abs_url / url_for integration ok';
+	ok dies { $c->abs_url_for('bad') }, 'unknown location ok';
+};
+
 subtest 'should redirect' => sub {
 	http $app, GET '/redirect';
 	http_status_is 302;
