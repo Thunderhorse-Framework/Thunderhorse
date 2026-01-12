@@ -163,6 +163,8 @@ workers to use the same cached values.
 
 I<Available in constructor>
 
+B<writer:> C<set_cache>
+
 =head2 Methods
 
 =head3 new

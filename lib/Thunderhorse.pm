@@ -1153,6 +1153,44 @@ application to avoid rendering the original error message which may contain
 sensitive information. It also acknowledges the existence of L<Gears::X::HTTP>,
 which may change the error code to something else.
 
+=head2 Performance tuning
+
+If performance becomes a concern, the first step would be to make sure the
+configuration of the PAGI server which runs the application is tuned for
+performance. Since PAGI is based on an event loop, a choice of an event loop
+backend may affect performance.
+
+It may be the case that the application is not using all the available CPU, but
+rather blocking the event loop waiting for I/O operations to finish, while
+other requests are queued up for their turn to be handled. The most common
+cause of this would be long database queries. If the system architecture allows
+it, use non-blocking I/O operations, which allows for smoother handling of
+requests. Long-running calculations like password hashing can be offloaded to
+subprocesses and awaited.
+
+For big applications with a lot of routes, setting
+L<Thunderhorse::Router/cache> could noticeably affect performance. Thunderhorse
+router is cache-friendly, and all workers can use the same cache keys when the
+cache is located outside of the perl process, reducing the memory footprint.
+
+Framework's performance can be improved for free simply by installing extra
+modules which improve the performance of Moo and Type::Tiny. The module will
+use them automatically if available. The list includes:
+
+=over
+
+=item * L<MooX::TypeTiny>
+
+=item * L<Class::XSAccessor>
+
+=item * L<MooX::XSConstructor>
+
+=item * L<Type::Tiny::XS>
+
+=back
+
+If you find a performance bottleneck in the framework's code, please let us know.
+
 =head2 Getting help
 
 Use L<issues on
