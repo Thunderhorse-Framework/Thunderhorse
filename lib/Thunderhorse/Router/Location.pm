@@ -46,7 +46,7 @@ has param 'controller' => (
 	isa => InstanceOf ['Thunderhorse::Controller'],
 );
 
-has param 'pagi_app' => (
+has field 'pagi_app' => (
 	isa => CodeRef,
 	lazy => 1,
 );
