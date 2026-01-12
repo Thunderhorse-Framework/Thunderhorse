@@ -149,7 +149,7 @@ Delegated method for L<Thunderhorse::App/loop>
 
 =head3 config
 
-Delegated method for L<Gears::App/loop>
+Delegated method for L<Gears::App/config>
 
 =head3 router
 
