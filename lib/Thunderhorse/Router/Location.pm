@@ -116,3 +116,119 @@ sub compare ($self, $path, $action)
 	return $self->SUPER::compare($path);
 }
 
+__END__
+
+=head1 NAME
+
+Thunderhorse::Router::Location - Router location implementation
+
+=head1 SYNOPSIS
+
+	# locations are typically created through the router
+	$router->add('/path/:id' => {
+		to => 'handler',
+		action => 'http.get',
+		order => 10,
+		pagi_middleware => sub ($app) { ... },
+	});
+
+=head1 DESCRIPTION
+
+This class represents a single routing location in Thunderhorse. It extends
+L<Gears::Router::Location::SigilMatch> to add Thunderhorse-specific
+functionality like action filtering, PAGI app support, and middleware wrapping.
+Locations are created by the router and handle matching URL patterns to
+controller actions.
+
+=head1 INTERFACE
+
+Inherits all interface from L<Gears::Router::Location>, and adds the interface
+documented below.
+
+=head2 Attributes
+
+=head3 action
+
+Action pattern to match. Format is C<scope.method> where both parts can be
+wildcards C<*>. If not passed, any action will match successfully.
+
+I<Available in constructor>
+
+=head3 name
+
+The name of this location. Auto-generated if not provided, based on action and
+pattern.
+
+Name must be unique and deterministic. Names which are auto-generated are
+always unique, but they are only deterministic if the locations are built in a
+deterministic manner. Non-deterministic locations may cause problems when
+caching with multiple workers.
+
+I<Available in constructor>
+
+=head3 to
+
+The destination for this location. Can be a code reference or a string naming a
+method in the controller. If not provided, the location is considered to be
+unimplemented - nothing will get run if it gets matched, but
+L</pagi_middleware> will still get executed. Having unimplemented bridges is
+considered a valid use case for this behavior.
+
+I<Available in constructor>
+
+=head3 order
+
+Integer controlling the order in which locations are matched. Lower numbers are
+matched first. Default is C<0>.
+
+I<Available in constructor>
+
+=head3 pagi
+
+Boolean indicating whether the C<to> destination is a native PAGI application.
+Default is C<false>. Must be manually set to C<true> if the intent is to have a
+PAGI application handling the route - there is currently no autodetection of
+PAGI apps.
+
+I<Available in constructor>
+
+=head3 pagi_middleware
+
+Code reference that wraps the location's PAGI app in middleware. The code ref
+receives the PAGI app as an argument and should return a wrapped PAGI app.
+
+I<Available in constructor>
+
+=head3 controller
+
+The controller instance in which context this location will be executed.
+
+I<Available in constructor>
+
+=head3 pagi_app
+
+The built PAGI application for this location. Built lazily by combining the
+destination handler with any middleware. This is the actual entry point that
+gets called when the location matches.
+
+=head2 Methods
+
+=head3 new
+
+	$object = $class->new(%args)
+
+Standard Mooish constructor. Consult L</Attributes> section for available
+constructor arguments.
+
+=head3 get_destination
+
+	$coderef = $object->get_destination()
+
+Returns the destination code reference for this location. If C<to> is already a
+code reference, returns it directly. If C<to> is a string, looks up the method
+on the controller. Returns C<undef> if no destination is set.
+
+=head1 SEE ALSO
+
+L<Thunderhorse::Router>, L<Gears::Router::Location::SigilMatch>
+

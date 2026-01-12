@@ -122,7 +122,7 @@ __END__
 
 =head1 NAME
 
-Thunderhorse::Router - Router for Thunderhorse framework
+Thunderhorse::Router - Router for Thunderhorse
 
 =head1 SYNOPSIS
 
@@ -130,7 +130,15 @@ Thunderhorse::Router - Router for Thunderhorse framework
 
 =head1 DESCRIPTION
 
+Thunderhorse router is a class which allows adding new locations (using
+L<Gears::Router/add>), finding locations (using L</find>) and matching them
+(using L<Gears::Router/match>). It uses L<Thunderhorse::Router::Location> as
+the location implementation.
+
 =head1 INTERFACE
+
+Inherits all interface from L<Gears::Router>, and adds the interface
+documented below.
 
 =head2 Attributes
 
