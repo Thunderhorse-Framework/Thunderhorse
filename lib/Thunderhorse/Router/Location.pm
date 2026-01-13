@@ -53,7 +53,7 @@ has field 'pagi_app' => (
 
 sub BUILD ($self, $)
 {
-	Gears::X::Thunderhorse->raise('controller has no action ' . $self->to)
+	Gears::X::Thunderhorse->raise('controller has no method ' . $self->to)
 		if defined $self->to && !$self->get_destination;
 
 	# register the route in the router
