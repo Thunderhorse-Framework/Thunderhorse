@@ -63,8 +63,17 @@ sub BUILD ($self, $)
 sub _build_action_re ($self)
 {
 	my ($scope, $method) = split /\./, $self->action;
-	$scope = $scope eq '*' ? qr{[^.]+} : quotemeta $scope;
-	$method = ($method // '*') eq '*' ? qr{(\.[^.]+)?} : quotemeta ".$method";
+	$scope = $scope eq '*' ? qr{[^.]+} : quotemeta lc $scope;
+
+	if (($method // '*') eq '*') {
+		$method = qr{(\.[^.]+)?};
+	}
+	elsif (lc $method eq 'get') {
+		$method = '[.](get|head)';
+	}
+	else {
+		$method = quotemeta lc ".$method";
+	}
 
 	return qr{^$scope$method$};
 }

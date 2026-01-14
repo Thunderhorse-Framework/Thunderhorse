@@ -568,6 +568,20 @@ Action format is C<scope.method> where scope is one of C<http>, C<sse>, or
 C<websocket>, and method is an HTTP method for C<http> or C<sse> scope, or
 omitted for C<websocket>. Either part can be C<*> to match anything.
 
+If a C<.get> route is created, it is automatically valid for similar C<HEAD>
+requests as well. If special C<HEAD> handling is required, a check can be made
+in handler code:
+
+	sub handle ($self, $ctx)
+	{
+		...; # set headers
+
+		# return empty (but defined) response if we have HEAD, full body
+		# otherwise
+		return '' if $ctx->req->is_head;
+		return 'full body';
+	}
+
 Common action patterns:
 
 	# Match only HTTP POST requests
@@ -579,7 +593,7 @@ Common action patterns:
 	# Match only WebSocket connections
 	action => 'websocket'
 
-	# Match only Server-Sent GET Events
+	# Match only Server-Sent GET and HEAD Events
 	action => 'sse.get'
 
 	# Match any request type (default)
@@ -591,6 +605,16 @@ allowing different handlers for different request types:
 	$router->add('/api/data' => { to => 'get_data', action => 'http.get' });
 	$router->add('/api/data' => { to => 'post_data', action => 'http.post' });
 	$router->add('/api/data' => { to => 'stream_data', action => 'websocket' });
+
+If the handler is the same for all actions, it can be achieved with a simple
+for loop:
+
+	for my $action (qw(http.get http.post websocket)) {
+		$router->add('/api/data' => { to => 'handle_api_data', action => $action });
+	}
+
+Make sure that the order of route building is deterministic, and that C<name>
+(if provided) is unique.
 
 =head3 PAGI compatibility
 
