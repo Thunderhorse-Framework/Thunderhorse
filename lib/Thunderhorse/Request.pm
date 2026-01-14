@@ -5,6 +5,7 @@ use Mooish::Base -standard;
 
 use Future::AsyncAwait;
 use Gears::X::Thunderhorse;
+use List::Util qw(mesh);
 
 extends 'PAGI::Request';
 with 'Thunderhorse::Message';
@@ -21,7 +22,29 @@ sub update ($self, $scope, $receive, $send)
 {
 	$self->{scope} = $scope;
 	$self->{receive} = $receive;
+
+	# handling next match, so make sure path_params are invalidated
+	delete $self->{path_params};
 }
+
+sub path_params ($self)
+{
+	return $self->{path_params} //= do {
+		my $ctx = $self->context;
+		my $match = $ctx->match;
+		$match = $match->[0]
+			if ref $match eq 'ARRAY';
+
+		my $pattern = $match->location->pattern_obj;
+		my $matched = $match->matched;
+		+{mesh [map { $_->{label} } $pattern->tokens->@*], $matched};
+	};
+}
+
+# TODO: should be part of PAGI::Request
+sub path_param ($self, $key)
+{
+	return $self->path_params->{$key};
 }
 
 __END__
