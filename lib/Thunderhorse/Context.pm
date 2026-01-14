@@ -54,18 +54,20 @@ has field '_consumed' => (
 	default => false,
 );
 
-sub set_pagi ($self, $new)
+sub update ($self, $scope, $receive, $send)
 {
-	$self->_set_pagi($new);
+	$self->_set_pagi([$scope, $receive, $send]);
 
-	$self->req->update;
-	$self->res->update;
+	$self->req->update($scope, $receive, $send);
+	$self->res->update($scope, $receive, $send);
 
-	$self->ws->update
+	$self->ws->update($scope, $receive, $send)
 		if $self->has_ws;
 
-	$self->sse->update
+	$self->sse->update($scope, $receive, $send)
 		if $self->has_sse;
+
+	return;
 }
 
 sub scope ($self)
@@ -141,8 +143,6 @@ receiver, and sender.
 
 I<Required in the constructor>
 
-B<writer:> C<set_pagi>
-
 =head3 match
 
 The router match object (L<Gears::Router::Match>) or array ref containing
@@ -207,6 +207,14 @@ Returns the PAGI receiver callback (the second element of the PAGI tuple).
 
 Returns the PAGI sender callback (the third element of the PAGI tuple).
 
+=head3 update
+
+	$ctx->update($scope, $receive, $send)
+
+Updates PAGI tuple elements in the context and in all subobjects (request,
+response, sse, websocket). This is done automatically before a route handler is
+called.
+
 =head3 consume
 
 	$ctx->consume()
@@ -219,8 +227,8 @@ context object for chaining.
 	$bool = $ctx->is_consumed()
 
 Returns true if the context has been consumed either explicitly via
-L</consume>, or implicitly by sending a response, opening a WebSocket
-connection, or opening an SSE stream.
+L</consume>, or implicitly by sending a response, closing a WebSocket
+connection, or closing an SSE stream.
 
 =head1 SEE ALSO
 

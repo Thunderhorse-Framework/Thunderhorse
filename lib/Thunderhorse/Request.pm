@@ -17,11 +17,11 @@ sub FOREIGNBUILDARGS ($class, %args)
 	return $args{context}->pagi->@[0, 1];
 }
 
-sub update ($self)
+sub update ($self, $scope, $receive, $send)
 {
-	my $pagi = $self->context->pagi;
-	$self->{scope} = $pagi->[0];
-	$self->{receive} = $pagi->[1];
+	$self->{scope} = $scope;
+	$self->{receive} = $receive;
+}
 }
 
 __END__

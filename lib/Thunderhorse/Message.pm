@@ -10,7 +10,7 @@ has param 'context' => (
 	weak_ref => 1,
 );
 
-sub update ($self)
+sub update ($self, $scope, $receive, $send)
 {
 	...;
 }

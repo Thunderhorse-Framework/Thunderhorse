@@ -79,7 +79,7 @@ sub build_handler ($controller, $destination)
 		Gears::X::Thunderhorse->raise('bad PAGI execution chain, not a Thunderhorse app')
 			unless my $ctx = $scope->{thunderhorse};
 
-		$ctx->set_pagi([$scope, $receive, $send]);
+		$ctx->update($scope, $receive, $send);
 
 		my $match = $ctx->match;
 		my $bridge = ref $match eq 'ARRAY';
