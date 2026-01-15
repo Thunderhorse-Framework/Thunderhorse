@@ -186,21 +186,26 @@ async sub pagi ($self, $scope, $receive, $send)
 		shutdown => sub { $self->_on_shutdown(@_) },
 	) if $scope_type eq 'lifespan';
 
+	# TODO: is this needed?
 	die 'Unsupported scope type'
 		unless $scope_type =~ m/^(http|sse|websocket)$/;
 
+	# copy scope since we are modifying it
 	$scope = {$scope->%*};
-	my $ctx = $self->_build_context($scope, $receive, $send);
+	my $ctx = $scope->{thunderhorse} = $self->_build_context($scope, $receive, $send);
 
-	$scope->{thunderhorse} = $ctx;
-
+	# query router for matches
 	my $req = $ctx->req;
-	my $router = $self->_router;
-	my $action = lc join '.', grep { defined } ($scope_type, $req->method);
-	my $matches = $router->match($req->path, $action);
+	my $matches = $self->_router->match(
+		$req->path,
+		(lc join '.', grep { defined } $scope_type, $req->method),
+	);
 
+	# run location handlers' nested structure
 	await pagi_loop($ctx, $matches->@*);
 
+	# 404 is possible even if we had matches, as long as no handler consumed
+	# the context
 	if (!$ctx->is_consumed) {
 		await $self->render_error(undef, $ctx, 404);
 	}
