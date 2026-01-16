@@ -177,7 +177,7 @@ C<PAGI_ENV> environmental variable to change that.
 
 =item -l, --show-locations
 
-Dumps installed app locations.
+Dumps all installed router locations.
 
 	thunderhorse -l app.pl
 
@@ -189,9 +189,10 @@ Shows this help message.
 
 =head1 DESCRIPTION
 
-This program manages Thunderhorse projects. Must be used in a directory which
-contains (or will contain) a Thunderhorse application. Currently, it only
-supports generating new project directory structures based on examples.
+This program manages Thunderhorse projects. It must be used in a directory which
+contains (or will contain) a Thunderhorse application.
 
-The meaning of C<TARGET> depends on the used flags.
+The meaning of C<TARGET> depends on the used flags. When generating a new
+application, it is a Perl namespace of the application class. When inspecting a
+Thunderhorse application, it is the path to the PAGI starter script.
 
