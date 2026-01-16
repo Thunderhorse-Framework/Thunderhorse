@@ -41,12 +41,6 @@ sub path_params ($self)
 	};
 }
 
-# TODO: should be part of PAGI::Request
-sub path_param ($self, $key)
-{
-	return $self->path_params->{$key};
-}
-
 __END__
 
 =head1 NAME
