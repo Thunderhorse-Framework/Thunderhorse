@@ -551,6 +551,29 @@ bridge, but still be under the bridge in the hierarchy:
 		},
 	);
 
+Only locations defined as children of a bridge will go through it during
+request handling:
+
+	my $admin_bridge = $router->add(
+		'/admin' => {
+			to => 'important_auth',
+		}
+	);
+
+	# some admin route
+	$admin_bridge->add(...);
+
+	# note - this one does not use $admin_bridge
+	$router->add(
+		'/admin/login' => {
+			to => 'login_page',
+		}
+	);
+
+Even though C</admin/login> path is nested under C</admin> path, the location
+for C<login_page> will completely bypass C<important_auth>. This is by design,
+as it prevents bridges from taking over a given path completely.
+
 =head3 Actions
 
 Actions allow routes to be restricted to specific request types. By default,
