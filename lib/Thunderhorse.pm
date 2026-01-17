@@ -1095,7 +1095,7 @@ event handling on the controller level.
 
 =item * Hook notifications
 
-	$app->hook(error => sub ($controller, $ctx, $error) {
+	$app->add_hook(error => sub ($controller, $ctx, $error) {
 		warn "error occured: $error";
 	});
 
@@ -1118,7 +1118,7 @@ Thunderhorse defines a closed set of supported hooks:
 
 =head4 startup
 
-	$app->hook(startup => sub ($state) { ... });
+	$app->add_hook(startup => sub ($state) { ... });
 
 	async sub on_startup ($self, $state) { ... }
 
@@ -1133,7 +1133,7 @@ This hook's method B<cannot be declared on a controller level>.
 
 =head4 shutdown
 
-	$app->hook(shutdown => sub ($state) { ... });
+	$app->add_hook(shutdown => sub ($state) { ... });
 
 	async sub on_shutdown ($self, $state) { ... }
 
@@ -1148,7 +1148,7 @@ This hook's method B<cannot be declared on a controller level>.
 
 =head4 error
 
-	$app->hook(error => sub ($controller, $ctx, error) { ... });
+	$app->add_hook(error => sub ($controller, $ctx, error) { ... });
 
 	async sub on_error ($self, $ctx, $error) { ... }
 	async sub on_error ($self, $controller, $ctx, $error) { ... }
