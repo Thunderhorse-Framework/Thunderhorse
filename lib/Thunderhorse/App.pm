@@ -243,6 +243,14 @@ async sub render_error ($self, $controller, $ctx, $code, $message = undef)
 	await $ctx->res->status($code)->text($message);
 }
 
+async sub render_response ($self, $controller, $ctx, $result)
+{
+	await $ctx->res
+		->status_try(200)
+		->content_type_try('text/html')
+		->send($result);
+}
+
 #########################
 ### EXTENSION METHODS ###
 #########################
@@ -468,6 +476,14 @@ Returns true if the application is running in production environment.
 
 Renders an error response with the given HTTP status code. Can be overridden to
 customize error pages.
+
+=head3 render_response
+
+	$self->render_response($controller, $ctx, $result)
+
+Renders a response from C<$result>, which contains what was returned by the
+handler. Can be overridden to change the default behavior of rendering result
+as HTML.
 
 =head3 on_startup
 

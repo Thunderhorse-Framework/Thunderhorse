@@ -19,6 +19,11 @@ package HooksApp {
 		default => 0,
 	);
 
+	has field 'render_response_called' => (
+		writer => 1,
+		default => 0,
+	);
+
 	has field 'on_error_called' => (
 		writer => 1,
 		default => 0,
@@ -28,6 +33,12 @@ package HooksApp {
 	{
 		$self->load_controller('CustomHooks')
 			->load_controller('Default');
+
+		$self->router->add(
+			'/app-render' => {
+				to => sub { return 'app render' },
+			}
+		);
 
 		# route that uses app-level hooks
 		$self->router->add(
@@ -44,6 +55,12 @@ package HooksApp {
 		$self->set_render_error_called($self->render_error_called + 1);
 		$message //= "app error: $code";
 		await $ctx->res->status($code)->text($message);
+	}
+
+	async sub render_response ($self, $controller, $ctx, $result)
+	{
+		$self->set_render_response_called($self->render_response_called + 1);
+		await $ctx->res->text($result);
 	}
 
 	async sub on_error ($self, $controller, $ctx, $error)
@@ -74,6 +91,11 @@ package HooksApp::Controller::CustomHooks {
 		default => 0,
 	);
 
+	has field 'render_response_called' => (
+		writer => 1,
+		default => 0,
+	);
+
 	has field 'on_error_called' => (
 		writer => 1,
 		default => 0,
@@ -81,6 +103,12 @@ package HooksApp::Controller::CustomHooks {
 
 	sub build ($self)
 	{
+		$self->router->add(
+			'/custom-render' => {
+				to => 'do_render',
+			}
+		);
+
 		$self->router->add(
 			'/custom-exception' => {
 				to => 'throw_exception',
@@ -94,6 +122,11 @@ package HooksApp::Controller::CustomHooks {
 		);
 	}
 
+	sub do_render ($self, $ctx)
+	{
+		return 'custom controller';
+	}
+
 	sub throw_exception ($self, $ctx)
 	{
 		Gears::X::HTTP->raise(418, "I'm a teapot");
@@ -102,6 +135,12 @@ package HooksApp::Controller::CustomHooks {
 	sub call_not_found ($self, $ctx)
 	{
 		return $self->render_error($ctx, 404, 'custom not found');
+	}
+
+	async sub render_response ($self, $ctx, $result)
+	{
+		$self->set_render_response_called($self->render_response_called + 1);
+		await $ctx->res->text($result);
 	}
 
 	async sub render_error ($self, $ctx, $code, $message = undef)
@@ -127,10 +166,21 @@ package HooksApp::Controller::Default {
 	sub build ($self)
 	{
 		$self->router->add(
+			'/default-render' => {
+				to => 'do_render',
+			}
+		);
+
+		$self->router->add(
 			'/default-exception' => {
 				to => 'throw_exception',
 			}
 		);
+	}
+
+	sub do_render ($self, $ctx)
+	{
+		return 'default controller';
 	}
 
 	sub throw_exception ($self, $ctx)
@@ -153,7 +203,7 @@ subtest 'should use controller custom hooks for exceptions' => sub {
 	http_status_is 418;
 	http_text_is "custom caught: 418";
 
-	_test_hooks($app, 1, 1, 0, 0);
+	_test_hooks($app, render_error => [0, 1], on_error => [0, 1]);
 };
 
 subtest 'should use controller custom hooks for render_error' => sub {
@@ -162,7 +212,7 @@ subtest 'should use controller custom hooks for render_error' => sub {
 	http_status_is 404;
 	http_text_is "custom not found";
 
-	_test_hooks($app, 1, 0, 0, 0);
+	_test_hooks($app, render_error => [0, 1]);
 };
 
 subtest 'should use app hooks for controller without custom hooks' => sub {
@@ -171,7 +221,7 @@ subtest 'should use app hooks for controller without custom hooks' => sub {
 	http_status_is 401;
 	http_text_is "app caught: 401";
 
-	_test_hooks($app, 0, 0, 1, 1);
+	_test_hooks($app, render_error => [1, 0], on_error => [1, 0]);
 };
 
 subtest 'should use app hooks for app-level routes' => sub {
@@ -180,7 +230,7 @@ subtest 'should use app hooks for app-level routes' => sub {
 	http_status_is 403;
 	http_text_is "app caught: 403";
 
-	_test_hooks($app, 0, 0, 1, 1);
+	_test_hooks($app, render_error => [1, 0], on_error => [1, 0]);
 };
 
 subtest 'should use app hooks for not found routes' => sub {
@@ -189,7 +239,34 @@ subtest 'should use app hooks for not found routes' => sub {
 	http_status_is 404;
 	http_text_is "app error: 404";
 
-	_test_hooks($app, 0, 0, 1, 0);
+	_test_hooks($app, render_error => [1, 0]);
+};
+
+subtest 'should use app render_response' => sub {
+	my $app = HooksApp->new;
+	http $app, GET '/app-render';
+	http_status_is 200;
+	http_text_is "app render";
+
+	_test_hooks($app, render_response => [1, 0]);
+};
+
+subtest 'should use default controller render_response' => sub {
+	my $app = HooksApp->new;
+	http $app, GET '/default-render';
+	http_status_is 200;
+	http_text_is "default controller";
+
+	_test_hooks($app, render_response => [1, 0]);
+};
+
+subtest 'should use custom controller render_response' => sub {
+	my $app = HooksApp->new;
+	http $app, GET '/custom-render';
+	http_status_is 200;
+	http_text_is "custom controller";
+
+	_test_hooks($app, render_response => [0, 1]);
 };
 
 done_testing;
@@ -203,13 +280,23 @@ sub _find_controller ($app, $class)
 	die "Controller of class $class not found";
 }
 
-sub _test_hooks ($app, @values)
+sub _test_hooks ($app, %values)
 {
 	my $controller = _find_controller($app, 'HooksApp::Controller::CustomHooks');
 
-	is $controller->render_error_called, $values[0], 'controller render_error ok';
-	is $controller->on_error_called, $values[1], 'controller on_error ok';
-	is $app->render_error_called, $values[2], 'app render_error ok';
-	is $app->on_error_called, $values[3], 'app on_error ok';
+	if ($values{render_error}) {
+		is $app->render_error_called, $values{render_error}[0], 'app render_error ok';
+		is $controller->render_error_called, $values{render_error}[1], 'controller render_error ok';
+	}
+
+	if ($values{render_response}) {
+		is $app->render_response_called, $values{render_response}[0], 'app render_response ok';
+		is $controller->render_response_called, $values{render_response}[1], 'controller render_response ok';
+	}
+
+	if ($values{on_error}) {
+		is $app->on_error_called, $values{on_error}[0], 'app on_error ok';
+		is $controller->on_error_called, $values{on_error}[1], 'controller on_error ok';
+	}
 }
 

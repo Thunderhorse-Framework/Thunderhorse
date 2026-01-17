@@ -96,7 +96,7 @@ sub build_handler ($controller, $destination)
 
 				if (!$ctx->is_consumed) {
 					if (defined $result) {
-						await $ctx->res->status_try(200)->content_type_try('text/html')->send($result);
+						await $controller->render_response($ctx, $result);
 					}
 					else {
 						weaken $facade;
@@ -1165,6 +1165,28 @@ Overridable methods are similar to hook methods. They are required to perform
 certain actions in the system. Like hook methods, they can be defined on app
 level or controller level. Unlike hooks, there are no notifications fired for
 them.
+
+=head4 render_response
+
+	async sub render_response($self, $ctx, $result) { ... }
+	async sub render_response($self, $controller, $ctx, $result) { ... }
+
+This method is only run when a handler for a location does not consume the
+context, but returns a defined value. The default implementation does the
+following things:
+
+=over
+
+=item * tries to set HTTP status code to 200 (if it was not set already)
+
+=item * tries to set C<Content-Type> header to C<text/html> (if it was not set already)
+
+=item * awaits sending C<$result> to the client using L<PAGI::Response/send> method (as text)
+
+=back
+
+It can be modified to add more DWIM-based behavior, for example check for
+references and render them as JSON/YAML.
 
 =head4 render_error
 

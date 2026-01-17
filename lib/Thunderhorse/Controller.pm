@@ -75,6 +75,11 @@ sub render_error ($self, $ctx, $code, $message = undef)
 	$self->app->render_error($self, $ctx, $code, $message);
 }
 
+sub render_response ($self, $ctx, $result)
+{
+	$self->app->render_response($self, $ctx, $result);
+}
+
 #####################
 ### HOOKS SECTION ###
 #####################
@@ -187,6 +192,14 @@ absolute URL for a named route.
 
 Renders an error response with the given HTTP status code. By default, it
 delegates to the application's L<Thunderhorse::App/render_error> method.
+
+=head3 render_response
+
+	$self->render_response($ctx, $result)
+
+Renders a response from C<$result>, which contains what was returned by the
+handler. By default, it delegates to the application's
+L<Thunderhorse::App/render_response> method.
 
 =head3 on_error
 
