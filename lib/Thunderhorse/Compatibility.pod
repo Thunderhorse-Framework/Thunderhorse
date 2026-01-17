@@ -1,6 +1,6 @@
 =head1 NAME
 
-Thunderhorse::Compatibility - past and future compatibility notices
+Thunderhorse::Compatibility - Past and future compatibility notices
 
 =head1 DESCRIPTION
 
@@ -19,4 +19,8 @@ None yet.
 =head2 Past changes
 
 None yet.
+
+=head1 SEE ALSO
+
+L<Thunderhorse::Manual> - table of contents
 
