@@ -2,6 +2,12 @@ Revision history for Thunderhorse
 
 {{$NEXT}}
 
+0.101 - 2026-01-17
+	[Documentation]
+	- Added Manual (table of contents)
+	- Added Cookbook
+	- Documentation fixes
+
 0.100 - 2026-01-17
 	- Start of the beta phase
 
