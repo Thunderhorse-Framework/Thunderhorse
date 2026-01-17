@@ -17,7 +17,7 @@ sub build ($self)
 
 sub welcome_page ($self, $ctx)
 {
-	return $self->render(
+	return $self->template(
 		'welcome', {
 			config => $self->config->config,
 			api_url => $self->url_for('location_list_api'),

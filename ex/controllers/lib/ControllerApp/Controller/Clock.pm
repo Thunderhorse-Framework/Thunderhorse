@@ -18,7 +18,7 @@ sub build ($self)
 
 sub show_clock ($self, $ctx)
 {
-	return $self->render(\*DATA);
+	return $self->template(\*DATA);
 }
 
 __DATA__

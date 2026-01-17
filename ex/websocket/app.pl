@@ -29,7 +29,7 @@ sub build ($self)
 
 sub init_ws ($self, $ctx)
 {
-	return $self->render(\*DATA);
+	return $self->template(\*DATA);
 }
 
 async sub handle_ws ($self, $ctx)

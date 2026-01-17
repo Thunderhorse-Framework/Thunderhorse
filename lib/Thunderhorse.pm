@@ -779,9 +779,9 @@ during request processing.
 
 =head3 Template
 
-The Template module (L<Thunderhorse::Module::Template>) adds template
-rendering capabilities using L<Template::Toolkit>. It adds a C<render> method to
-controllers.
+The Template module (L<Thunderhorse::Module::Template>) adds template rendering
+capabilities using L<Template::Toolkit>. It adds a
+L<Thunderhorse::Module::Template/template> method to controllers.
 
 Loading the module:
 
@@ -813,7 +813,7 @@ Once loaded, templates can be rendered from controller methods:
 
 	sub show_page ($self, $ctx)
 	{
-		return $self->render('page', {
+		return $self->template('page', {
 			title => 'My Page',
 			content => 'Hello, World!',
 		});
@@ -834,12 +834,12 @@ If the first argument is passed as the reference, the behavior changes:
 
 =back
 
-For simple apps, it is often useful to render from C<DATA>. GLOB refs will be
+For simple apps, it is often useful to parse C<DATA>. GLOB refs will be
 rolled back after reading them automatically.
 
 	sub render_data ($self, $ctx)
 	{
-		return $self->render(\*DATA);
+		return $self->template(\*DATA);
 	}
 
 =head3 Middleware

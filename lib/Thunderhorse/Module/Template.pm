@@ -26,7 +26,7 @@ sub build ($self)
 	my $tpl = $self->template;
 
 	$self->add_method(
-		controller => render => sub ($controller, $template, $vars = {}) {
+		controller => template => sub ($controller, $template, $vars = {}) {
 			return $tpl->process($template, $vars);
 		}
 	);
@@ -51,22 +51,22 @@ Thunderhorse::Module::Template - Template module for Thunderhorse
 	# in controller method
 	sub show_page ($self, $ctx)
 	{
-		return $self->render('page', {
+		return $self->template('page', {
 			title => 'My Page',
 			content => 'Hello, World!',
 		});
 	}
 
-	# render from DATA handle
+	# parse DATA handle
 	sub render_data ($self, $ctx)
 	{
-		return $self->render(\*DATA);
+		return $self->template(\*DATA);
 	}
 
 =head1 DESCRIPTION
 
 The Template module adds template rendering capabilities using
-L<Template::Toolkit>. It adds a L</render> method to controllers.
+L<Template::Toolkit>. It adds a L</template> method to controllers.
 
 =head1 CONFIGURATION
 
@@ -91,17 +91,17 @@ case they will be ignored.
 
 =head2 Controller Methods
 
-=head3 render
+=head3 template
 
-	$self->render('page', { title => 'My Page' });
-	$self->render(\*DATA);
-	$self->render(\$template_string);
+	$self->template('page', { title => 'My Page' });
+	$self->template(\*DATA);
+	$self->template(\$template_string);
 
-Renders a template and returns the rendered content. The first argument is the
-template name (C<.tt> suffix will be added automatically), and the second is a
-hash reference of variables to pass to the template. The method returns the
-rendered content, which is then sent to the client as HTML (if the context is
-not already consumed).
+Parses a template and returns the content. The first argument is the template
+name (C<.tt> suffix will be added automatically), and the second is a hash
+reference of variables to pass to the template. The method returns the parsed
+content, which can then be returned from the handler to be sent to the client
+as HTML (if the context is not already consumed).
 
 If the first argument is passed as a reference, the behavior changes:
 

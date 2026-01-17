@@ -51,22 +51,22 @@ package TemplateApp {
 	sub test ($self, $ctx, $ex)
 	{
 		$ex = defined $ex ? ".$ex" : '';
-		return $self->render("test$ex", {name => 'World'});
+		return $self->template("test$ex", {name => 'World'});
 	}
 
 	sub test_inline ($self, $ctx)
 	{
-		return $self->render(\'Hello [% name %]!', {name => 'Inline'});
+		return $self->template(\'Hello [% name %]!', {name => 'Inline'});
 	}
 
 	sub test_data ($self, $ctx)
 	{
-		return $self->render(\*main::DATA);
+		return $self->template(\*main::DATA);
 	}
 
 	sub test_bad ($self, $ctx)
 	{
-		return $self->render('bad_template');
+		return $self->template('bad_template');
 	}
 }
 

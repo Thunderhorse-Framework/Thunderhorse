@@ -29,7 +29,7 @@ sub build ($self)
 
 sub init_sse ($self, $ctx)
 {
-	return $self->render(\*DATA);
+	return $self->template(\*DATA);
 }
 
 async sub handle_sse ($self, $ctx)
