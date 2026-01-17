@@ -1282,7 +1282,7 @@ L<PAGI>, L<Gears>, L<Kelp>
 
 Bartosz Jarzyna E<lt>bbrtj.pro@gmail.comE<gt>
 
-Consider supporting my effort: https://bbrtj.eu/support
+Consider supporting my effort: L<https://bbrtj.eu/support>
 
 =head2 Contributors
 
