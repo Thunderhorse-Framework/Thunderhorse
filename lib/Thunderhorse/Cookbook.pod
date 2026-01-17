@@ -1,0 +1,39 @@
+=head1 NAME
+
+Thunderhorse::Cookbook - Reusable coding patterns
+
+=head1 RECIPES
+
+=head2 Reusing common bridge across controllers
+
+If you need to make a common bridge that will be used across the system, it is
+best to define it in the base application and give it a name:
+
+	# in MyApp.pm
+	sub build ($self)
+	{
+		$self->router->add(
+			'/admin' => {
+				name => 'admin_auth',
+				to => 'check_auth',
+			}
+		);
+
+		# make sure the controller is loaded after the bridge is added
+		# (done automatically if loading from configuration)
+		$self->load_controller('ReusesBridge');
+	}
+
+Then you can fetch it in any of the controller to add more locations as its children:
+
+	# in MyApp/Controller/ReusesBridge.pm
+	sub build ($self)
+	{
+		my $bridge = $self->router->find('admin_auth')
+		$bridge->add(...);
+	}
+
+=head1 SEE ALSO
+
+L<Thunderhorse::Manual> - table of contents
+
