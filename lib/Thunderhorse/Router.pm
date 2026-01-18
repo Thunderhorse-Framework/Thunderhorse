@@ -79,7 +79,7 @@ sub _maybe_cache ($self, $type, $path, $method)
 
 sub match ($self, $path, $method //= '')
 {
-	return $self->_maybe_cache('SUPER::match', $path, $method);
+	return ($self->_maybe_cache('SUPER::match', $path, $method))[0];
 }
 
 sub flat_match ($self, $path, $method //= '')
