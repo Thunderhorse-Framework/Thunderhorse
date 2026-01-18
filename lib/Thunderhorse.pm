@@ -123,7 +123,7 @@ __END__
 
 =head1 NAME
 
-Thunderhorse - A no-compromises brutally-good web framework
+Thunderhorse - A no-compromises, brutally-good web framework
 
 =head1 SYNOPSIS
 
