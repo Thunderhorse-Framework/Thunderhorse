@@ -10,7 +10,7 @@ use Thunderhorse::Context;
 use Thunderhorse::Router;
 use Thunderhorse::Controller;
 use Thunderhorse::AppController;
-use Path::Tiny;
+use Path::Tiny ();    # path attribute exists in this package
 
 use HTTP::Status qw(status_message);
 use IO::Async::Loop;
