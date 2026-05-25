@@ -1025,11 +1025,25 @@ are loaded in order:
 
 =back
 
-Where C<$ext> is any extension handled by available config readers (C<.pl> for
-Perl scripts by default), and C<$env> is the current environment (production,
-development, or test). The environment can be set via the C<PAGI_ENV>
-environment variable or the C<env> constructor parameter. C<pagi-server -E
-production> also sets C<PAGI_ENV>.
+Where C<$ext> is any extension handled by available config readers, and C<$env>
+is the current environment (production, development, or test). The environment
+can be set via the C<PAGI_ENV> environment variable or the C<env> constructor
+parameter. C<pagi-server -E production> also sets C<PAGI_ENV>.
+
+By default, configuration is gathered from perl files with C<.pl> extension.
+These files should yield a hash reference with configuration keys. To use an
+alternative type of configuration files, L<Gears::App/config> should be
+provided as a constructor argument, or declared in the application class. Perl
+files allow additional symbols to be declared in them (as subroutines), and by
+default C<app> symbol is declared, allowing you to easily provide complex data
+in your configuration:
+
+	# conf/config.pl
+	{
+		# a custom configuration key, calling custom method from your
+		# application class
+		system_info => app->get_system_info,
+	}
 
 Configuration files are merged together, with environment-specific settings
 overriding base settings. Example structure:
