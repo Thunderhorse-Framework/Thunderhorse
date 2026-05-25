@@ -9,6 +9,7 @@ use Thunderhorse::Request;
 use Thunderhorse::Response;
 use Thunderhorse::WebSocket;
 use Thunderhorse::SSE;
+use PAGI::Stash;
 
 extends 'Gears::Context';
 
@@ -26,7 +27,6 @@ has field 'match' => (
 has field 'req' => (
 	(STRICT ? (isa => InstanceOf ['Thunderhorse::Request']) : ()),
 	default => sub ($self) { Thunderhorse::Request->new(context => $self) },
-	handles => [qw(stash)],
 );
 
 has field 'res' => (
@@ -46,6 +46,11 @@ has field 'sse' => (
 	(STRICT ? (isa => InstanceOf ['Thunderhorse::SSE']) : ()),
 	predicate => 1,
 	lazy => sub ($self) { Thunderhorse::SSE->new(context => $self) },
+);
+
+has field 'stash' => (
+	(STRICT ? (isa => InstanceOf ['PAGI::Stash']) : ()),
+	default => sub ($self) { PAGI::Stash->new($self) },
 );
 
 has field '_consumed' => (
@@ -176,6 +181,10 @@ Events scope.
 
 B<predicate:> C<has_sse>
 
+=head3 stash
+
+The <PAGI::Stash> object for this context. Created automatically.
+
 =head2 Methods
 
 =head3 new
@@ -184,10 +193,6 @@ B<predicate:> C<has_sse>
 
 Standard Mooish constructor. Consult L</Attributes> section for available
 constructor arguments.
-
-=head3 stash
-
-Delegated method for L<PAGI::Request/stash>
 
 =head3 scope
 
