@@ -10,6 +10,7 @@ use Thunderhorse::Response;
 use Thunderhorse::WebSocket;
 use Thunderhorse::SSE;
 use PAGI::Stash;
+use PAGI::Session;
 
 extends 'Gears::Context';
 
@@ -50,7 +51,12 @@ has field 'sse' => (
 
 has field 'stash' => (
 	(STRICT ? (isa => InstanceOf ['PAGI::Stash']) : ()),
-	default => sub ($self) { PAGI::Stash->new($self) },
+	lazy => sub ($self) { PAGI::Stash->new($self) },
+);
+
+has field 'session' => (
+	(STRICT ? (isa => InstanceOf ['PAGI::Session']) : ()),
+	lazy => sub ($self) { PAGI::Session->new($self) },
 );
 
 has field '_consumed' => (
@@ -115,7 +121,8 @@ Thunderhorse::Context - Request handling context
 	async sub show ($self, $ctx, $id)
 	{
 		my $query_param = $ctx->req->query('name');
-		my $stashed_value = $ctx->stash->{key};
+		my $stashed_value = $ctx->stash->get('key');
+		my $session_value = $ctx->session->get('key');
 
 		await $ctx->res->text("Hello World");
 	}
@@ -183,7 +190,17 @@ B<predicate:> C<has_sse>
 
 =head3 stash
 
-The <PAGI::Stash> object for this context. Created automatically.
+The L<PAGI::Stash> object for this context. Created lazily when first accessed.
+
+=head3 session
+
+The L<PAGI::Session> object for this context. Created lazily when first
+accessed.
+
+Note that for session to work properly, L<PAGI::Middleware::Session> must be
+used, or other middleware that will populate C<pagi.session> scope key.
+L<PAGI::Session> will throw an exception if C<pagi.session> is not present in
+scope.
 
 =head2 Methods
 

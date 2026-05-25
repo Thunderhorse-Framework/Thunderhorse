@@ -1,6 +1,10 @@
 Revision history for Thunderhorse
 
 {{$NEXT}}
+	[Changes]
+	- Context's stash is now created lazily
+	- Add session (PAGI::Session) object to Context
+	- Fix documentation showcasing bad usage of session
 
 0.104 - 2026-05-25
 	[Fixes]
