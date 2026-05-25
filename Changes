@@ -1,6 +1,8 @@
 Revision history for Thunderhorse
 
 {{$NEXT}}
+
+0.104 - 2026-05-25
 	[Fixes]
 	- Fix an error caused by PAGI moving stash from request to PAGI::Stash
 
