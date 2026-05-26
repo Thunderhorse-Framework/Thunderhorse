@@ -539,17 +539,7 @@ to avoid consuming the context by accident:
 
 Bridges only match for paths when a full level is matched, for example the
 above admin bridge will match for C</admin> and C</admin/test>, but not for
-C</admins>. For this reason, all locations under the bridge should start their
-patterns with C</>. The sole exception to this is creating a location under a
-bridge with an empty pattern, which will match the exact same pattern as the
-bridge, but still be under the bridge in the hierarchy:
-
-	# ran after $admin_bridge, but only on the same pattern
-	$admin_bridge->add(
-		'' => {
-			to => 'admin_homepage',
-		},
-	);
+C</admins>.
 
 =head3 Actions
 
