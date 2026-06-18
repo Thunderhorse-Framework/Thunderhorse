@@ -240,7 +240,9 @@ sub run ($self)
 async sub render_error ($self, $controller, $ctx, $code, $message = undef)
 {
 	$message = defined $message && !$self->is_production ? $message : status_message($code);
-	await $ctx->res->status($code)->text($message);
+	# Error responses are plain text, overriding any content-type the action set
+	# before it threw (text() now keeps a preset content-type, so force it here).
+	await $ctx->res->status($code)->content_type('text/plain; charset=utf-8')->text($message);
 }
 
 async sub render_response ($self, $controller, $ctx, $result)

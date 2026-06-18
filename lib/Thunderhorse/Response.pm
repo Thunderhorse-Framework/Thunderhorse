@@ -4,6 +4,7 @@ use v5.40;
 use Mooish::Base -standard;
 
 use Gears::X::Thunderhorse;
+use Future::AsyncAwait;
 
 extends 'PAGI::Response';
 with 'Thunderhorse::Message';
@@ -13,13 +14,68 @@ sub FOREIGNBUILDARGS ($class, %args)
 	Gears::X::Thunderhorse->raise('no context for response')
 		unless $args{context};
 
-	return $args{context}->pagi->@[0, 2];
+	# PAGI::Response->new() now takes only the scope.
+	return $args{context}->pagi->[0];
+}
+
+sub BUILD ($self, $args)
+{
+	# new() above ignores the sender (the old constructor stored it), so capture
+	# it from the context here. update() refreshes it when the PAGI tuple changes
+	# (e.g. next-match dispatch).
+	$self->{send} = $self->context->pagi->[2];
 }
 
 sub update ($self, $scope, $receive, $send)
 {
 	$self->{scope} = $scope;
 	$self->{send} = $send;
+}
+
+# PAGI::Response is a value: the terminal builders (text/html/json/redirect/
+# send) set the body and return $self, while respond($send) performs the single
+# send. Thunderhorse awaits a terminal builder to send the response, so bridge
+# the two models here: build via the parent value method, then perform the
+# guarded send. We set the shared pagi.response.sent scope flag exactly as
+# PAGI::Context::HTTP->respond does, so the context's is_sent / is_consumed see
+# the response as sent (and a double send is rejected).
+async sub text ($self, @args)
+{
+	$self->SUPER::text(@args);
+	return await $self->_send_response;
+}
+
+async sub html ($self, @args)
+{
+	$self->SUPER::html(@args);
+	return await $self->_send_response;
+}
+
+async sub json ($self, @args)
+{
+	$self->SUPER::json(@args);
+	return await $self->_send_response;
+}
+
+async sub redirect ($self, @args)
+{
+	$self->SUPER::redirect(@args);
+	return await $self->_send_response;
+}
+
+async sub send ($self, @args)
+{
+	$self->SUPER::send(@args);
+	return await $self->_send_response;
+}
+
+async sub _send_response ($self)
+{
+	my $scope = $self->{scope};
+	Gears::X::Thunderhorse->raise('response already sent')
+		if $scope && $scope->{'pagi.response.sent'};
+	$scope->{'pagi.response.sent'} = 1 if $scope;
+	return await $self->respond($self->{send});
 }
 
 __END__
