@@ -16,7 +16,8 @@ package FacadeApp::Controller::Test::Facade {
 	async sub send_something_later ($self)
 	{
 		await $self->app->loop->delay_future(after => 0.5);
-		await $self->res->text('Something');
+		$self->res->text('Something');
+		await $self->send_res;
 	}
 }
 

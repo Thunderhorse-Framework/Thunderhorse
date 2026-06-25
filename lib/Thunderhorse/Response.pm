@@ -13,13 +13,30 @@ sub FOREIGNBUILDARGS ($class, %args)
 	Gears::X::Thunderhorse->raise('no context for response')
 		unless $args{context};
 
-	return $args{context}->pagi->@[0, 2];
+	return ($args{context}->pagi->[0]);
 }
 
 sub update ($self, $scope, $receive, $send)
 {
 	$self->{scope} = $scope;
-	$self->{send} = $send;
+}
+
+sub _allows_empty_body ($self, $status)
+{
+	# HTTP protocol hardcodes - these statuses can have empty bodies
+	return $status < 200
+		|| $status == 204
+		|| ($status >= 300 && $status < 400);
+}
+
+sub is_ready ($self)
+{
+	return true if $self->has_body_source;
+
+	return $self->_allows_empty_body($self->status)
+		if $self->has_status;
+
+	return false;
 }
 
 __END__
@@ -32,9 +49,9 @@ Thunderhorse::Response - Response wrapper for Thunderhorse
 
 	async sub show ($self, $ctx, $id)
 	{
-		await $ctx->res->text("Hello World");
-		await $ctx->res->json({data => 'value'});
-		await $ctx->res->redirect('/login');
+		$ctx->res->text("Hello World");
+		$ctx->res->json({data => 'value'});
+		$ctx->res->redirect('/login');
 	}
 
 =head1 DESCRIPTION

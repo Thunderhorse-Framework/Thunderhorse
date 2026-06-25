@@ -5,6 +5,7 @@ use Mooish::Base -standard;
 
 use Devel::StrictMode;
 
+use Future::AsyncAwait;
 use Thunderhorse::Request;
 use Thunderhorse::Response;
 use Thunderhorse::WebSocket;
@@ -30,9 +31,15 @@ has field 'req' => (
 	default => sub ($self) { Thunderhorse::Request->new(context => $self) },
 );
 
+has field 'connection' => (
+	(STRICT ? (isa => HasMethods ['response_started']) : ()),
+	lazy => sub ($self) { $self->scope->{'pagi.connection'} },
+);
+
 has field 'res' => (
 	(STRICT ? (isa => InstanceOf ['Thunderhorse::Response']) : ()),
-	default => sub ($self) { Thunderhorse::Response->new(context => $self) },
+	lazy => sub ($self) { Thunderhorse::Response->new(context => $self) },
+	clearer => -hidden,
 );
 
 # NOTE: websocket must be lazy, because it will die if scope is not websocket
@@ -105,9 +112,39 @@ sub consume ($self)
 sub is_consumed ($self)
 {
 	return $self->_consumed
-		|| $self->res->is_sent
+		|| $self->connection->response_started
+		|| $self->res->is_ready
 		|| ($self->has_ws && $self->ws->is_closed)
 		|| ($self->has_sse && $self->sse->is_closed);
+}
+
+sub empty_res ($self)
+{
+	$self->_clear_res;
+	return $self->res;
+}
+
+async sub send_res ($self)
+{
+	# NOTE: we check a general pagi constraint, but raise a thunderhorse exception -
+	# should it just die()?
+	Gears::X::Thunderhorse->raise('response was already sent')
+		if $self->connection->response_started;
+
+	await $self->res->respond($self->sender);
+
+	return;
+}
+
+async sub try_send_res ($self)
+{
+	return
+		if $self->connection->response_started;
+
+	await $self->res->respond($self->sender)
+		if $self->res->is_ready;
+
+	return;
 }
 
 __END__
@@ -124,7 +161,7 @@ Thunderhorse::Context - Request handling context
 		my $stashed_value = $ctx->stash->get('key');
 		my $session_value = $ctx->session->get('key');
 
-		await $ctx->res->text("Hello World");
+		$ctx->res->text("Hello World");
 	}
 
 =head1 DESCRIPTION

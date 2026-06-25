@@ -110,6 +110,9 @@ sub build_handler ($controller, $destination)
 			}
 		}
 
+		# this needs to be here, since we want to use $send from this context
+		await $ctx->try_send_res;
+
 		# if this is a bridge and bridge did not render, it means we are
 		# free to go deeper. Avoid first match, as it was handled already
 		# above
@@ -390,27 +393,27 @@ it is equally easy to do something else. Take the following destination example:
 
 	async sub send_custom ($self, $ctx)
 	{
-		await $ctx->res->text('Plaintext response');
+		$ctx->res->text('Plaintext response');
 		return 'this will not get rendered';
 	}
 
 This takes response (L<Thunderhorse::Response>) from context, and sends
 plaintext manually. This action I<consumes> the context, marking it as
-finished. In this case, return value of the destination is ignored. Note that
-the await call on C<< ->text >> method is mandatory.
+finished. In this case, return value of the destination is ignored.
+
 
 Another example:
 
 	sub send_custom2 ($self, $ctx)
 	{
-		$ctx->res->status(400)->content_type('text/plain');
-		return 'this is rendered as plaintext and status 400';
+		$ctx->res->content_type('text/plain');
+		return 'this is rendered as plaintext';
 	}
 
 This time, the return value of the destination is not ignored, since only
 setting response metadata does not cause the context to be consumed. Status and
 I<Content-Type> header will not be overridden, so the response will be sent as
-plaintext. In this case, there is no need to await anything.
+plaintext.
 
 While not very common, a destination can be unimplemented when C<to> is
 skipped. Unimplemented locations will be "stepped over" during request
