@@ -1393,13 +1393,13 @@ use them automatically if available. The list includes:
 
 =over
 
-=item * L<MooX::TypeTiny>
-
 =item * L<Class::XSAccessor>
 
-=item * L<MooX::XSConstructor>
-
 =item * L<Type::Tiny::XS>
+
+=item * L<Future::XS>
+
+=item * All of modules listed in L<Mooish::Base/Moo>
 
 =back
 
