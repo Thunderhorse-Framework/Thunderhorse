@@ -401,20 +401,20 @@ Return value of the destination sub is by default sent to the requestor as
 C<text/html> with status code C<200>. This is a common and handy shortcut, but
 it is equally easy to do something else. Take the following destination example:
 
-	async sub send_custom ($self, $ctx)
+	async sub build_custom ($self, $ctx)
 	{
 		$ctx->res->text('Plaintext response');
 		return 'this will not get rendered';
 	}
 
-This takes response (L<Thunderhorse::Response>) from context, and sends
-plaintext manually. This action I<consumes> the context, marking it as
+This takes response (L<Thunderhorse::Response>) from context, and sets
+plaintext body manually. This action I<consumes> the context, marking it as
 finished. In this case, return value of the destination is ignored.
 
 
 Another example:
 
-	sub send_custom2 ($self, $ctx)
+	sub set_custom2 ($self, $ctx)
 	{
 		$ctx->res->content_type('text/plain');
 		return 'this is rendered as plaintext';
@@ -536,10 +536,10 @@ bridge is created when you call C<add> on the result of another C<add>:
 
 When C</admin/users> is requested, both C<check_admin> and C<list_users> will
 be called in sequence. The bridge destination receives the same arguments as
-regular destinations. If the bridge consumes the context (by sending a
-response), further matching stops. Otherwise, the next matching location is
-called. For this reason, bridge destinations should return C<undef> explicitly
-to avoid consuming the context by accident:
+regular destinations. If the bridge consumes the context, further matching
+stops. Otherwise, the next matching location is called. For this reason, bridge
+destinations should return C<undef> explicitly to avoid consuming the context
+by accident:
 
 	sub check_admin ($self, $ctx)
 	{
@@ -1323,7 +1323,7 @@ This hook's method B<cannot be declared on a controller level>.
 The C<on_error> hook is called when an exception occurs during request
 processing.
 
-This hook should consume the context by sending a response. The default handler
+This hook should consume the context by setting a response. The default handler
 calls L</render_error> method a text page with an error message.
 
 =head3 Overriding system methods
@@ -1348,7 +1348,7 @@ following things:
 
 =item * tries to set C<Content-Type> header to C<text/html> (if it was not set already)
 
-=item * awaits sending C<$result> to the client using L<PAGI::Response/send> method (as text)
+=item * sets C<$result> as the response body
 
 =back
 
@@ -1360,11 +1360,12 @@ references and render them as JSON/YAML.
 	async sub render_error($self, $ctx, $code, $message = undef) { ... }
 	async sub render_error($self, $controller, $ctx, $code, $message = undef) { ... }
 
-This method's default implementation sends a plain text response with code
+This method's default implementation builds a plain text response with code
 C<500>. The default implementation checks C<is_production> method of the
 application to avoid rendering the original error message which may contain
 sensitive information. It also acknowledges the existence of L<Gears::X::HTTP>,
-which may change the error code to something else.
+which may change the error code to something else. Original response is
+discarded and a new one is built.
 
 =head2 Performance tuning
 
