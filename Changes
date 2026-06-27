@@ -1,6 +1,8 @@
 Revision history for Thunderhorse
 
 {{$NEXT}}
+
+0.106 - 2026-06-27
 	[Public interface changes]
 	- Added connection attribute to Context
 	- Added empty_res, send_res, try_send_res methods to Context
