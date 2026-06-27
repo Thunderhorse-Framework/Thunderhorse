@@ -110,7 +110,13 @@ sub build_handler ($controller, $destination)
 			}
 		}
 
-		# this needs to be here, since we want to use $send from this context
+		# NOTE: this method will not send the response if we already sent or if
+		# the response is not ready. It does not check whether the context is
+		# consumed altogether, so a manually consumed context with a non-ready
+		# response will not send anything, likely rendering some kind of error
+		# page (but not 404). Currently, a PAGI error is raised, informing
+		# about app returning without sending respnose.
+		# NOTE: this needs to be here, since we want to use $send from this context
 		await $ctx->try_send_res;
 
 		# if this is a bridge and bridge did not render, it means we are
@@ -216,6 +222,10 @@ the very last operation in the file.
 Scripts must be called using C<pagi-server> (or other PAGI-specific software).
 Running the script using C<perl> does nothing, as the application cannot run
 itself - it will be built, but it will not set up a webserver.
+
+C<pagi-server> can be obtained separately from L<PAGI::Server> module.
+Thunderhorse does not automatically include PAGI::Server as its dependency,
+since it is not coupled with any specific PAGI server implementation.
 
 =back
 
@@ -647,7 +657,7 @@ would expect.
 One unique feature of Thunderhorse is that it does not stop searching for
 matches once it finds a match. Instead, it gathers a list of matching locations
 and then proceeds to execute them in order. It stops once one of the handlers
-consumes the context, which is usually done by sending a response. If no
+consumes the context, which is usually done by setting a response body. If no
 handlers consumed the context, a I<404 Not Found> error page is rendered.
 
 This allows for superb flexibility, but has a couple of interesting side
@@ -767,6 +777,30 @@ locations, they can match on their own even if none of their children are
 matching. If we let C<important_auth> run before C<login_page>, for example by
 setting its order to C<-2>, it will effectively become a bridge for
 C<login_page>.
+
+Currently, the context can be consumed by:
+
+=over
+
+=item * Setting the response body in L<Thunderhorse::Context/res>
+
+=item * Setting the response status to one of the statuses which does not require a body
+
+=item * Closing a websocket connection in L<Thunderhorse::Context/ws>
+
+=item * Closing a sse connection in L<Thunderhorse::Context/sse>
+
+=item * Manually sending any response via PAGI, triggering C<response_started> in C<pagi.connection> scope key
+
+=item * Manually consuming the context via L<Thunderhorse::Context/consume> call
+
+=back
+
+This system should be pretty bulletproof, however once you use the last option
+and call L<Thunderhorse::Context/consume>, all safety measures are off - it's
+now your responsibility to make sure the route handler will render something
+eventually. If it doesn't, you will get a low-level PAGI exception and an error
+page completely bypassing any Thunderhorse error rendering. Use with caution.
 
 =head2 Controllers
 

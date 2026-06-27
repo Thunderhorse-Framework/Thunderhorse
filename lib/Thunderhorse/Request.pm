@@ -89,11 +89,10 @@ constructor arguments.
 
 =head3 update
 
-	$req->update()
+	$req->update($scope, $receive, $send)
 
-Updates the internal PAGI scope and receiver from the context's PAGI tuple.
-Called automatically when the context's PAGI tuple changes via
-setter of L<Thunderhorse::Context/pagi>.
+Updates the internal PAGI scope and receiver. Called automatically when the
+context's PAGI tuple changes via setter of L<Thunderhorse::Context/pagi>.
 
 =head1 SEE ALSO
 

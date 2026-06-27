@@ -239,6 +239,13 @@ used, or other middleware that will populate C<pagi.session> scope key.
 L<PAGI::Session> will throw an exception if C<pagi.session> is not present in
 scope.
 
+=head3 connection
+
+Connection object for this context, taken from PAGI scope. Connection objects
+are inserted into the scope by the server, and there is no clear subclass they
+will inherit from. They follow a duck-typed interface though, and can be
+trusted to have at least C<response_started> method.
+
 =head2 Methods
 
 =head3 new
@@ -288,6 +295,31 @@ context object for chaining.
 Returns true if the context has been consumed either explicitly via
 L</consume>, or implicitly by sending a response, closing a WebSocket
 connection, or closing an SSE stream.
+
+=head3 empty_res
+
+	$new_res = $ctx->empty_res()
+
+Discards the current response attached to the context, then builds and returns
+a fresh one. Useful if you want to completely discard response data.
+
+=head3 send_res
+
+	await $ctx->send_res()
+
+Tries to send the response back to the client. Dies if the response has already
+been sent. Force-sends the response even if it has an empty body.
+
+=head3 try_send_res
+
+	$ctx->try_send_res()
+
+Similar as L</send_res>, but does nothing if the response has already been
+sent. Also skips sending the response if it is not ready yet, according to
+L<Thunderhorse::Response/is_ready>.
+
+Note that you don't have to use this method explicitly. Thunderhorse will
+automatically use it after the route handler returns.
 
 =head1 SEE ALSO
 

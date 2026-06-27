@@ -58,7 +58,7 @@ Thunderhorse::Response - Response wrapper for Thunderhorse
 
 Thunderhorse::Response is a thin wrapper around L<PAGI::Response> that
 integrates with L<Thunderhorse::Context>. It provides a fluent interface for
-building and sending HTTP responses, including JSON, HTML, redirects, and file
+building HTTP responses, including JSON, HTML, redirects, and file
 downloads.
 
 This class extends L<PAGI::Response> and mixes in C<Thunderhorse::Message> to
@@ -88,11 +88,21 @@ constructor arguments.
 
 =head3 update
 
-	$res->update()
+	$res->update($scope, $receive, $send)
 
-Updates the internal PAGI scope and sender from the context's PAGI tuple.
-Called automatically when the context's PAGI tuple changes via
-setter of L<Thunderhorse::Context/pagi>.
+Updates the internal PAGI scope. Called automatically when the context's PAGI
+tuple changes via setter of L<Thunderhorse::Context/pagi>.
+
+=head3 is_ready
+
+	$bool = $res->is_ready()
+
+Returns whether this response is ready as far as Thunderhorse is concerned.
+Responses which are ready will cause the context to become consumed after the
+route handler returns.
+
+Response is ready if it has a body, or if it has a status which does not
+require body like C<204 No Content> or C<3XX>.
 
 =head1 SEE ALSO
 
