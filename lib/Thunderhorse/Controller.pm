@@ -117,7 +117,7 @@ Thunderhorse::Controller - Base controller class for Thunderhorse
 
 	async sub show ($self, $ctx, $id)
 	{
-		await $ctx->res->text("User ID: $id");
+		$ctx->res->text("User ID: $id");
 	}
 
 =head1 DESCRIPTION
