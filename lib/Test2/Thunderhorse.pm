@@ -4,6 +4,10 @@ use v5.40;
 
 use Test2::API qw(context);
 use PAGI::Test::Client;
+
+# PAGI::Test::Client drives Future::IO's event loop. A Thunderhorse app owns an
+# IO::Async loop, so Future::IO runs on that loop here, as pagi-server binds it.
+use Future::IO::Impl::IOAsync;
 use Carp qw(croak);
 
 use Exporter 'import';

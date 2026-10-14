@@ -8,6 +8,7 @@ requires 'Gears' => '0.104';
 requires 'Mooish::Base' => '1.005';
 requires 'Future::AsyncAwait' => 0;
 requires 'IO::Async' => 0;
+requires 'Future::IO' => '0.23';
 requires 'JSON::MaybeXS' => 0;
 requires 'Log::Handler' => 0;
 requires 'Template::Toolkit' => 0;
