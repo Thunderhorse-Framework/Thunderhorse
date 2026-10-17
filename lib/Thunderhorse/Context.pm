@@ -131,8 +131,7 @@ async sub send_res ($self)
 	Gears::X::Thunderhorse->raise('response was already sent')
 		if $self->connection->response_started;
 
-	await $self->res->respond($self->sender);
-
+	await $self->res->finalize->to_app->($self->pagi->@*);
 	return;
 }
 
@@ -141,7 +140,7 @@ async sub try_send_res ($self)
 	return
 		if $self->connection->response_started;
 
-	await $self->res->respond($self->sender)
+	await $self->res->finalize->to_app->($self->pagi->@*)
 		if $self->res->is_ready;
 
 	return;

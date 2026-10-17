@@ -135,7 +135,7 @@ subtest 'should render text set by res->text' => sub {
 subtest 'should render without overriding set headers' => sub {
 	http $app, GET '/preset_headers';
 	http_status_is 201;
-	http_header_is 'content-type', 'application/xml; charset=utf-8';
+	http_header_is 'content-type', 'application/xml';
 	http_text_is 'this gets rendered as xml';
 };
 

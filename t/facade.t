@@ -144,10 +144,12 @@ subtest 'should render /good_send2' => sub {
 	http_text_is 'Something';
 };
 
-subtest 'should not render /consumed' => sub {
-	like dies {
-		http $app, GET '/consumed';
-	}, qr/\QDid you forget to 'await'\E/, 'exception ok';
+subtest 'should answer 500 for /consumed' => sub {
+	my $warnings = warnings { http $app, GET '/consumed' };
+	http_status_is 500;
+	http_text_is 'Internal Server Error';
+	is $warnings, [match qr/^incomplete response: response never sent http\.response\.start/],
+		'incomplete response reported';
 };
 
 subtest 'should not render /bad' => sub {

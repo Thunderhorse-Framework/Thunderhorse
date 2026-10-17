@@ -1,6 +1,10 @@
 Revision history for Thunderhorse
 
 {{$NEXT}}
+	[Public interface changes]
+
+	[Breaking changes]
+	- Thunderhorse::Response no longer extends PAGI::Response
 
 0.106 - 2026-06-27
 	[Public interface changes]

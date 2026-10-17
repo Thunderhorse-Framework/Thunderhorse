@@ -18,6 +18,7 @@ use v5.40;
 
 use Exporter qw(import);
 use Future::AsyncAwait;
+use Future::IO::Impl::IOAsync;
 
 use Gears::X::Thunderhorse;
 
