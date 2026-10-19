@@ -246,7 +246,8 @@ async sub render_error ($self, $controller, $ctx, $code, $message = undef)
 
 async sub render_response ($self, $controller, $ctx, $result)
 {
-	$ctx->res->status_try(200)->content_type_try('text/html; charset=utf-8')->body_source($result);
+	my $res = $ctx->res->status_try(200);
+	$res->has_content_type ? $res->body_source($result) : $res->html($result);
 }
 
 #########################
