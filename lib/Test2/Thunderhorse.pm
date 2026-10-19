@@ -137,7 +137,7 @@ sub _websocket ($app, $path, @args)
 {
 	$LAST_WS = _build_client($app)->websocket($path, @args);
 
-	if ($LAST_WS->is_closed) {
+	if ($LAST_WS->refused) {
 		my $ctx = context();
 		$ctx->fail("Connecting to websocket $path failed");
 		$ctx->release;
@@ -158,7 +158,7 @@ sub _sse ($app, $path, @args)
 {
 	$LAST_SSE = _build_client($app)->sse($path, @args);
 
-	if ($LAST_SSE->is_closed) {
+	if ($LAST_SSE->refused) {
 		my $ctx = context();
 		$ctx->fail("Connecting to sse $path failed");
 		$ctx->release;
