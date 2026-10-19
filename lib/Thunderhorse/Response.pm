@@ -225,34 +225,12 @@ sub is_ready ($self)
 
 sub finalize ($self)
 {
-	my $status = $self->_status;
+	Gears::X::Thunderhorse->raise('attempt to finalize a response prematurely')
+		unless $self->is_ready;
 
-	if (my $type = $self->_type) {
-		return response(
-			$type,
-			$self->_body_source,
-			(defined $status ? (status => $status) : ()),
-			headers => $self->headers,
-			$self->_args->@*
-		);
-	}
-	elsif (my $body_source = $self->_body_source) {
-		return PAGI::Response->new(
-			$body_source,
-			(defined $status ? (status => $status) : ()),
-			headers => $self->headers,
-		);
-	}
-	elsif (defined $status && $self->_allows_empty_body($status)) {
-		return response(
-			'Empty',
-			status => $status,
-			headers => $self->headers,
-		);
-	}
-	else {
-		Gears::X::Thunderhorse->raise('attempt to finalize a response prematurely');
-	}
+	return response($self->_type // '+PAGI::Response', $self->_body_source,
+		($self->has_status ? (status => $self->_status) : ()),
+		headers => $self->headers, $self->_args->@*);
 }
 
 __END__
