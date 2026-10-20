@@ -5,7 +5,6 @@ use Mooish::Base -standard;
 
 use Scalar::Util qw(blessed refaddr);
 use PAGI::Response qw(response status_forbids_body);
-use Gears::X::Thunderhorse;
 
 with 'Thunderhorse::Message';
 
@@ -81,9 +80,6 @@ sub is_ready ($self)
 
 sub finalize ($self)
 {
-	Gears::X::Thunderhorse->raise('attempt to finalize a response prematurely')
-		unless $self->is_ready;
-
 	my ($class, $content, @options) = $self->_has_content ? $self->_content->@* : ('+PAGI::Response');
 	return response($class, $content,
 		($self->has_status ? (status => $self->status) : ()),
@@ -184,8 +180,10 @@ C<3XX> redirect.
 	$response = $res->finalize()
 
 Builds the L<PAGI::Response> for what was staged: the class chosen by C<text>,
-C<html> and the others (the base class if none), with the status and headers
-set. Dies if the response is not L</is_ready>.
+C<html> and the others, with the status and headers set. With no class chosen
+it is the base class with an empty body, so L<Thunderhorse::Context/send_res>
+can always send. L<Thunderhorse::Context/try_send_res> checks L</is_ready>
+first.
 
 =head1 SEE ALSO
 
