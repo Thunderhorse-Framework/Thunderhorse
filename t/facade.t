@@ -3,6 +3,13 @@ use Test2::V1 -ipP;
 use Test2::Thunderhorse;
 use HTTP::Request::Common;
 
+# These tests wait on the app's IO::Async loop ($self->app->loop->delay_future).
+# PAGI::Test::Client drives Future::IO, so bind Future::IO to IO::Async here,
+# as pagi-server does when it serves the app. Under PAGI-Tools 0.002 this
+# worked without the binding only because the handler's first wait was an
+# IO::Async future, whose ->get runs its loop.
+use Future::IO::Impl::IOAsync;
+
 ################################################################################
 # This tests whether facades work correctly
 ################################################################################

@@ -1,5 +1,6 @@
 on 'test' => sub {
 	requires 'Test2::V1' => '0';
+	requires 'Future::IO::Impl::IOAsync' => '0';
 };
 
 requires 'perl' => '5.040';
