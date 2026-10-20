@@ -1,9 +1,10 @@
 on 'test' => sub {
 	requires 'Test2::V1' => '0';
+	requires 'Future::IO::Impl::IOAsync' => '0';
 };
 
 requires 'perl' => '5.040';
-requires 'PAGI::Tools' => '0.002000';
+requires 'PAGI::Tools' => '0.003000';
 requires 'Gears' => '0.104';
 requires 'Mooish::Base' => '1.005';
 requires 'Future::AsyncAwait' => 0;

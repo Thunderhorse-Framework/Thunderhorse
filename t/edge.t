@@ -138,13 +138,12 @@ subtest 'returning future from handler should work' => sub {
 	http_text_is 'return text without await';
 };
 
-subtest 'should throw an exception when the context is consumed without sending anything' => sub {
-	my $ex = dies {
-		http $app, GET '/bad_consume';
-		fail "call succeeded with error " . http->status;
-	};
-
-	like $ex, qr{App returned without sending response}, 'exception ok';
+subtest 'should answer 500 when the context is consumed without sending anything' => sub {
+	my $warnings = warnings { http $app, GET '/bad_consume' };
+	http_status_is 500;
+	http_text_is 'Internal Server Error';
+	is $warnings, [match qr/^incomplete response: response never sent http\.response\.start/],
+		'incomplete response reported';
 };
 
 done_testing;
