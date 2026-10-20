@@ -240,7 +240,10 @@ sub run ($self)
 
 async sub render_error ($self, $controller, $ctx, $code, $message = undef)
 {
-	$message = defined $message && !$self->is_production ? $message : status_message($code);
+	# $message is whatever was thrown. Stringify it, so a foreign error that does
+	# not stringify itself (die {...}) is shown as Perl prints it, HASH(0x...),
+	# instead of being refused as a text body.
+	$message = defined $message && !$self->is_production ? "$message" : status_message($code);
 	$ctx->empty_res->status($code)->text($message);
 }
 
